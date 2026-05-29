@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight, Save } from 'lucide-react';
 import { Modal } from './Modal';
 import { Button } from './Button';
@@ -121,6 +121,12 @@ export function InvestigationContextForm({
     loadFormData(existingContext)
   );
 
+  useEffect(() => {
+    if (!isOpen) {
+      setCurrentStep(0);
+    }
+  }, [isOpen]);
+
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
@@ -160,10 +166,6 @@ export function InvestigationContextForm({
     if (currentStep > 0) {
       setCurrentStep((prev) => prev - 1);
     }
-  };
-
-  const handleOpenChange = () => {
-    setCurrentStep(0);
   };
 
   const step = steps[currentStep];

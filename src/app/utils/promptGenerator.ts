@@ -242,7 +242,7 @@ function templateOpportunityValidation(): string {
     '',
     '### 1. Avaliação de potencial',
     '- Avalie o potencial desta oportunidade (alto/médio/baixo) e justifique.',
-    '- Indique o impacto potencial se реализado.',
+    '- Indique o impacto potencial se implementado.',
     '',
     '### 2. Riscos identificados',
     '- Liste 3-5 riscos principais associados a esta oportunidade.',

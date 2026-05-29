@@ -55,6 +55,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const deleteAtrito = (id: string) => {
     setAtritos((prev) => prev.filter((a) => a.id !== id));
+    setInvestigationContexts((prev) => prev.filter((c) => c.atritoId !== id));
   };
 
   const addOpportunity = (opportunity: Opportunity) => {

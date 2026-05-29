@@ -66,31 +66,31 @@ export const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
 ];
 
 export function isValidContext(value: string): value is Context {
-  return (CONTEXT_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return CONTEXT_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidIntensity(value: string): value is Intensity {
-  return (INTENSITY_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return INTENSITY_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidFrequency(value: string): value is Frequency {
-  return (FREQUENCY_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return FREQUENCY_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidAffected(value: string): value is Affected {
-  return (AFFECTED_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return AFFECTED_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidAtritoStatus(value: string): value is AtritoStatus {
-  return (ATRITO_STATUS_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return ATRITO_STATUS_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidOpportunityStatus(value: string): value is OpportunityStatus {
-  return (OPPORTUNITY_STATUS_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return OPPORTUNITY_STATUS_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidPriority(value: string): value is Priority {
-  return (PRIORITY_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return PRIORITY_OPTIONS.some((o) => o.value === value);
 }
 
 export const TIMES_OCCURRED_OPTIONS: { value: TimesOccurred; label: string }[] = [
@@ -133,21 +133,21 @@ export const INVESTIGATION_STATUS_OPTIONS: { value: InvestigationStatus; label: 
 ];
 
 export function isValidTimesOccurred(value: string): value is TimesOccurred {
-  return (TIMES_OCCURRED_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return TIMES_OCCURRED_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidEmotionalImpact(value: string): value is EmotionalImpact {
-  return (EMOTIONAL_IMPACT_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return EMOTIONAL_IMPACT_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidPracticalImpact(value: string): value is PracticalImpact {
-  return (PRACTICAL_IMPACT_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return PRACTICAL_IMPACT_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidProblemClarity(value: string): value is ProblemClarity {
-  return (PROBLEM_CLARITY_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return PROBLEM_CLARITY_OPTIONS.some((o) => o.value === value);
 }
 
 export function isValidInvestigationStatus(value: string): value is InvestigationStatus {
-  return (INVESTIGATION_STATUS_OPTIONS as { value: string }[]).some((o) => o.value === value);
+  return INVESTIGATION_STATUS_OPTIONS.some((o) => o.value === value);
 }

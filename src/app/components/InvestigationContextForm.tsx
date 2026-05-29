@@ -9,18 +9,17 @@ import {
   TIMES_OCCURRED_OPTIONS,
   EMOTIONAL_IMPACT_OPTIONS,
   PRACTICAL_IMPACT_OPTIONS,
+  isValidTimesOccurred,
+  isValidEmotionalImpact,
+  isValidPracticalImpact,
 } from '../constants';
-import {
-  findInvestigationContextByAtritoId,
-  saveOrUpdateInvestigationContext,
-} from '../utils/storage';
-import { showToast } from './Toast';
 
 interface InvestigationContextFormProps {
   isOpen: boolean;
   onClose: () => void;
   atrito: Atrito;
-  onSaved?: () => void;
+  existingContext?: AtritoInvestigationContext;
+  onSave: (context: AtritoInvestigationContext) => void;
 }
 
 interface FormData {
@@ -51,8 +50,7 @@ const initialFormData: FormData = {
   notes: '',
 };
 
-function loadFormData(atritoId: string): FormData {
-  const existing = findInvestigationContextByAtritoId(atritoId);
+function loadFormData(existing?: AtritoInvestigationContext): FormData {
   if (!existing) return initialFormData;
 
   return {
@@ -74,42 +72,37 @@ export function InvestigationContextForm({
   isOpen,
   onClose,
   atrito,
-  onSaved,
+  existingContext,
+  onSave,
 }: InvestigationContextFormProps) {
   const [formData, setFormData] = useState<FormData>(() =>
-    loadFormData(atrito.id)
+    loadFormData(existingContext)
   );
 
   const handleChange = (field: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const hasData = Object.values(formData).some((v) => v.trim() !== '');
-
   const handleSave = () => {
     const context: AtritoInvestigationContext = {
-      id: hasData
-        ? findInvestigationContextByAtritoId(atrito.id)?.id || crypto.randomUUID()
-        : crypto.randomUUID(),
+      id: existingContext?.id || crypto.randomUUID(),
       atritoId: atrito.id,
       scenario: formData.scenario,
-      timesOccurred: (formData.timesOccurred as AtritoInvestigationContext['timesOccurred']) || 'primeira vez',
+      timesOccurred: isValidTimesOccurred(formData.timesOccurred) ? formData.timesOccurred : 'primeira vez',
       affectedPeopleDescription: formData.affectedPeopleDescription,
       currentWorkaround: formData.currentWorkaround,
-      emotionalImpact: (formData.emotionalImpact as AtritoInvestigationContext['emotionalImpact']) || 'nenhum',
-      practicalImpact: (formData.practicalImpact as AtritoInvestigationContext['practicalImpact']) || 'nenhum',
+      emotionalImpact: isValidEmotionalImpact(formData.emotionalImpact) ? formData.emotionalImpact : 'nenhum',
+      practicalImpact: isValidPracticalImpact(formData.practicalImpact) ? formData.practicalImpact : 'nenhum',
       rootCauseGuess: formData.rootCauseGuess,
       evidence: formData.evidence,
       similarSituations: formData.similarSituations,
       questionsToAsk: formData.questionsToAsk,
       notes: formData.notes,
-      createdAt: findInvestigationContextByAtritoId(atrito.id)?.createdAt || new Date().toISOString(),
+      createdAt: existingContext?.createdAt || new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
 
-    saveOrUpdateInvestigationContext(context);
-    showToast('Contexto salvo com sucesso!', 'success');
-    onSaved?.();
+    onSave(context);
     onClose();
   };
 
@@ -187,7 +180,7 @@ export function InvestigationContextForm({
               O que você tentou fazer para contornar?
             </label>
             <Textarea
-              placeholder="Solucões improvisadas, workarounds, adaptções..."
+              placeholder="Soluções improvisadas, workarounds, adaptações..."
               value={formData.currentWorkaround}
               onChange={(e) => handleChange('currentWorkaround', e.target.value)}
               rows={2}
@@ -255,7 +248,7 @@ export function InvestigationContextForm({
           </div>
         </div>
 
-        <div className="flex justify-end pt-2 border-t border-border">
+        <div className="flex flex-col sm:flex-row justify-end gap-2 pt-2 border-t border-border">
           <Button onClick={handleSave}>
             <Save size={18} />
             Salvar contexto

@@ -21,6 +21,7 @@ import { formatDate } from '../utils/date';
 import {
   OPPORTUNITY_STATUS_OPTIONS,
   PRIORITY_OPTIONS,
+  isValidOpportunityStatus,
 } from '../constants';
 import { loadOpportunityFilters, saveOpportunityFilters, OpportunityFiltersState } from '../utils/storage';
 import { showConfirm } from '../components/ConfirmDialog';
@@ -141,7 +142,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
   };
 
   const handleExportAll = () => {
-    const markdown = exportAllOpportunitiesToMarkdown(filteredOpportunities);
+    const markdown = exportAllOpportunitiesToMarkdown(filteredOpportunities, atritos, investigationContexts);
     downloadMarkdown(markdown, 'todas-oportunidades.md');
     showToast('Arquivo Markdown baixado!');
   };
@@ -392,7 +393,8 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
               <Select
                 value={selectedOpportunity.status}
                 onChange={(e) => {
-                  const val = e.target.value as Opportunity['status'];
+                  if (!isValidOpportunityStatus(e.target.value)) return;
+                  const val = e.target.value;
                   updateOpportunity(selectedOpportunity.id, { status: val });
                   setSelectedOpportunity({ ...selectedOpportunity, status: val });
                 }}
@@ -436,7 +438,10 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
               <label className="text-sm font-medium mb-2 block">Tipo de prompt</label>
               <Select
                 value={selectedTemplateType}
-                onChange={(e) => setSelectedTemplateType(e.target.value as PromptTemplateType)}
+                onChange={(e) => {
+                  const valid = PROMPT_TEMPLATES.find((t) => t.type === e.target.value);
+                  if (valid) setSelectedTemplateType(valid.type);
+                }}
                 options={PROMPT_TEMPLATES.map((t) => ({
                   value: t.type,
                   label: t.label,

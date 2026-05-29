@@ -122,7 +122,11 @@ export function exportOpportunityToMarkdown(
   return lines.join('\n');
 }
 
-export function exportAllOpportunitiesToMarkdown(opportunities: Opportunity[]): string {
+export function exportAllOpportunitiesToMarkdown(
+  opportunities: Opportunity[],
+  atritos?: Atrito[],
+  investigationContexts?: AtritoInvestigationContext[]
+): string {
   const header = [
     '# Todas as Oportunidades — Atrito',
     '',
@@ -133,7 +137,9 @@ export function exportAllOpportunitiesToMarkdown(opportunities: Opportunity[]): 
     '',
   ].join('\n');
 
-  const items = opportunities.map((opp) => exportOpportunityToMarkdown(opp)).join('\n\n---\n\n');
+  const items = opportunities
+    .map((opp) => exportOpportunityToMarkdown(opp, atritos, investigationContexts))
+    .join('\n\n---\n\n');
 
   return header + items;
 }

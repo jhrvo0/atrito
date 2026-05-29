@@ -8,10 +8,10 @@ import { Select } from '../components/Select';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
 import { useApp } from '../context/AppContext';
-import { Atrito, AtritoInvestigationContext, AtritoStatus } from '../types';
+import { Atrito, AtritoStatus } from '../types';
 import { generateOpportunityFromAtrito } from '../utils/opportunityGenerator';
 import { exportAtritoToMarkdown, downloadMarkdown, copyToClipboard } from '../utils/markdown';
-import { loadFilters, saveFilters, FiltersState, loadInvestigationContexts } from '../utils/storage';
+import { loadFilters, saveFilters, FiltersState } from '../utils/storage';
 import { formatDate } from '../utils/date';
 import {
   CONTEXT_OPTIONS,
@@ -37,15 +37,10 @@ const defaultFilters: FiltersState = {
 };
 
 export function Atritos({ onNavigate }: AtritosProps) {
-  const { atritos, opportunities, deleteAtrito, updateAtrito, addOpportunity } = useApp();
+  const { atritos, opportunities, investigationContexts, deleteAtrito, updateAtrito, addOpportunity, addInvestigationContext } = useApp();
   const [filters, setFilters] = useState<FiltersState>(() => loadFilters());
   const [selectedAtrito, setSelectedAtrito] = useState<Atrito | null>(null);
   const [showInvestigationForm, setShowInvestigationForm] = useState(false);
-  const [investigationContexts, setInvestigationContexts] = useState<AtritoInvestigationContext[]>([]);
-
-  useEffect(() => {
-    setInvestigationContexts(loadInvestigationContexts());
-  }, [selectedAtrito]);
 
   const getContextForAtrito = (atritoId: string) => {
     return investigationContexts.find((c) => c.atritoId === atritoId);
@@ -105,13 +100,15 @@ export function Atritos({ onNavigate }: AtritosProps) {
   };
 
   const handleExportAtrito = (atrito: Atrito) => {
-    const markdown = exportAtritoToMarkdown(atrito);
+    const context = getContextForAtrito(atrito.id);
+    const markdown = exportAtritoToMarkdown(atrito, context);
     downloadMarkdown(markdown, `atrito-${atrito.id}.md`);
     showToast('Arquivo Markdown baixado!');
   };
 
   const handleCopyAtrito = async (atrito: Atrito) => {
-    const markdown = exportAtritoToMarkdown(atrito);
+    const context = getContextForAtrito(atrito.id);
+    const markdown = exportAtritoToMarkdown(atrito, context);
     const success = await copyToClipboard(markdown);
     if (success) {
       showToast('Atrito copiado para a área de transferência!');
@@ -248,7 +245,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
                       {atrito.status}
                     </span>
                     {getContextForAtrito(atrito.id) && (
-                      <Tag variant="investigated">contexto</Tag>
+                      <Tag variant="investigated">aprofundado</Tag>
                     )}
                   </div>
                 </div>
@@ -399,8 +396,10 @@ export function Atritos({ onNavigate }: AtritosProps) {
           isOpen={showInvestigationForm}
           onClose={() => setShowInvestigationForm(false)}
           atrito={selectedAtrito}
-          onSaved={() => {
-            setInvestigationContexts(loadInvestigationContexts());
+          existingContext={getContextForAtrito(selectedAtrito.id)}
+          onSave={(context) => {
+            addInvestigationContext(context);
+            showToast('Contexto salvo com sucesso!', 'success');
           }}
         />
       )}

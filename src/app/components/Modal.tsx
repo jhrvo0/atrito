@@ -60,26 +60,26 @@ export function Modal({ isOpen, onClose, children, title }: ModalProps) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
       <div
         ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? titleId : undefined}
-        className="relative bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-lg"
+        className="relative bg-card rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-xl border border-border/50"
       >
-        <div className="sticky top-0 bg-card border-b border-border px-4 md:px-8 py-4 md:py-6 flex items-center justify-between">
-          {title && <h2 id={titleId} className="text-lg md:text-xl">{title}</h2>}
+        <div className="sticky top-0 bg-card/95 backdrop-blur-sm border-b border-border/50 px-5 py-3.5 flex items-center justify-between">
+          {title && <h2 id={titleId} className="text-base font-medium">{title}</h2>}
           <button
             ref={closeRef}
             onClick={onClose}
             aria-label="Fechar modal"
-            className="ml-auto text-muted-foreground hover:text-foreground transition-colors"
+            className="ml-auto text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
           >
-            <X size={20} />
+            <X size={16} />
           </button>
         </div>
-        <div className="px-4 md:px-8 py-4 md:py-6">{children}</div>
+        <div className="px-5 py-4">{children}</div>
       </div>
     </div>
   );

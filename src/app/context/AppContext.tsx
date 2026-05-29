@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Atrito, Opportunity, AtritoInvestigationContext } from '../types';
 import {
   loadAtritos,
@@ -8,6 +8,8 @@ import {
   loadInvestigationContexts,
   saveInvestigationContexts,
 } from '../utils/storage';
+
+type Theme = 'light' | 'dark';
 
 interface AppContextType {
   atritos: Atrito[];
@@ -22,9 +24,21 @@ interface AppContextType {
   addInvestigationContext: (context: AtritoInvestigationContext) => void;
   updateInvestigationContext: (id: string, context: Partial<AtritoInvestigationContext>) => void;
   deleteInvestigationContext: (id: string) => void;
+  theme: Theme;
+  toggleTheme: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
+
+function loadTheme(): Theme {
+  const saved = localStorage.getItem('atrito-theme');
+  if (saved === 'dark' || saved === 'light') return saved;
+  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+}
+
+function applyTheme(theme: Theme) {
+  document.documentElement.classList.toggle('dark', theme === 'dark');
+}
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [atritos, setAtritos] = useState<Atrito[]>(() => loadAtritos());
@@ -32,6 +46,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [investigationContexts, setInvestigationContexts] = useState<AtritoInvestigationContext[]>(
     () => loadInvestigationContexts()
   );
+  const [theme, setTheme] = useState<Theme>(() => loadTheme());
+
+  useEffect(() => {
+    applyTheme(theme);
+    localStorage.setItem('atrito-theme', theme);
+  }, [theme]);
+
+  const toggleTheme = useCallback(() => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  }, []);
 
   useEffect(() => {
     saveAtritos(atritos);
@@ -107,6 +131,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         addInvestigationContext,
         updateInvestigationContext,
         deleteInvestigationContext,
+        theme,
+        toggleTheme,
       }}
     >
       {children}

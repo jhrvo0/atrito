@@ -64,33 +64,46 @@ export function Oportunidades() {
 
   const hasActiveFilters = filters.searchTerm || filters.statusFilter || filters.priorityFilter;
 
+  const getPriorityBorder = (priority: string) => {
+    switch (priority) {
+      case 'alta':
+        return 'border-l-orange-500';
+      case 'média':
+        return 'border-l-amber-400';
+      case 'baixa':
+        return 'border-l-stone-300 dark:border-l-stone-600';
+      default:
+        return 'border-l-stone-300';
+    }
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'alta':
-        return 'bg-red-50 text-red-700';
+        return 'bg-orange-50 text-orange-700 dark:bg-orange-950 dark:text-orange-300';
       case 'média':
-        return 'bg-yellow-50 text-yellow-700';
+        return 'bg-amber-50 text-amber-700 dark:bg-amber-950 dark:text-amber-300';
       case 'baixa':
-        return 'bg-green-50 text-green-700';
+        return 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300';
       default:
-        return 'bg-gray-50 text-gray-700';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ideia':
-        return 'bg-blue-50 text-blue-700';
+        return 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300';
       case 'validando':
-        return 'bg-purple-50 text-purple-700';
+        return 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300';
       case 'protótipo':
-        return 'bg-indigo-50 text-indigo-700';
+        return 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300';
       case 'em desenvolvimento':
-        return 'bg-green-50 text-green-700';
+        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300';
       case 'arquivada':
-        return 'bg-gray-50 text-gray-700';
+        return 'bg-muted text-muted-foreground';
       default:
-        return 'bg-gray-50 text-gray-700';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -122,7 +135,7 @@ export function Oportunidades() {
     if (!generatedPrompt) return;
     const success = await copyToClipboard(generatedPrompt);
     if (success) {
-      showToast('Prompt copiado para a área de transferência!');
+      showToast('Prompt copiado!');
     }
   };
 
@@ -130,26 +143,26 @@ export function Oportunidades() {
     if (!promptModalOpportunity || !generatedPrompt) return;
     const filename = `prompt-${selectedTemplateType}-${promptModalOpportunity.id}.md`;
     downloadMarkdown(generatedPrompt, filename);
-    showToast('Prompt exportado como Markdown!');
+    showToast('Prompt exportado!');
   };
 
   const handleExportOpportunity = (opportunity: Opportunity) => {
     const markdown = exportOpportunityToMarkdown(opportunity, atritos, investigationContexts);
     downloadMarkdown(markdown, `oportunidade-${opportunity.id}.md`);
-    showToast('Arquivo Markdown baixado!');
+    showToast('Markdown baixado!');
   };
 
   const handleExportAll = () => {
     const markdown = exportAllOpportunitiesToMarkdown(filteredOpportunities, atritos, investigationContexts);
     downloadMarkdown(markdown, 'todas-oportunidades.md');
-    showToast('Arquivo Markdown baixado!');
+    showToast('Arquivo baixado!');
   };
 
   const handleCopyOpportunity = async (opportunity: Opportunity) => {
     const markdown = exportOpportunityToMarkdown(opportunity, atritos, investigationContexts);
     const success = await copyToClipboard(markdown);
     if (success) {
-      showToast('Oportunidade copiada para a área de transferência!');
+      showToast('Copiado!');
     }
   };
 
@@ -163,7 +176,7 @@ export function Oportunidades() {
   const handleDeleteOpportunity = async (opportunity: Opportunity) => {
     const confirmed = await showConfirm({
       title: 'Excluir oportunidade',
-      message: `Tem certeza que deseja excluir "${opportunity.title}"? Esta ação não pode ser desfeita.`,
+      message: `Tem certeza que deseja excluir "${opportunity.title}"?`,
       confirmLabel: 'Excluir',
     });
     if (confirmed) {
@@ -174,134 +187,124 @@ export function Oportunidades() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+    <div className="max-w-3xl mx-auto">
+      <div className="flex items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-2xl md:text-3xl mb-1 md:mb-2">Oportunidades</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Ideias e hipóteses geradas a partir dos atritos observados</p>
+          <h1 className="text-2xl mb-0.5">Oportunidades</h1>
+          <p className="text-xs text-muted-foreground">Hipóteses de produto nascidas de observações</p>
         </div>
         {filteredOpportunities.length > 0 && (
-          <Button variant="secondary" onClick={handleExportAll} className="w-full sm:w-auto">
-            <FileDown size={18} />
-            Exportar todas
+          <Button variant="secondary" size="sm" onClick={handleExportAll}>
+            <FileDown size={14} />
+            Exportar
           </Button>
         )}
       </div>
 
-      <div className="mb-6 space-y-3">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="mb-4 space-y-2">
+        <div className="flex gap-2">
           <div className="flex-1">
             <Input
-              placeholder="Buscar oportunidades..."
+              placeholder="Buscar..."
               value={filters.searchTerm}
               onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-              icon={<Search size={18} />}
+              icon={<Search size={14} />}
             />
           </div>
           {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters} className="w-full sm:w-auto">
-              <X size={18} />
-              <span className="hidden sm:inline">Limpar filtros</span>
-              <span className="sm:hidden">Limpar</span>
+            <Button variant="ghost" onClick={clearFilters} size="sm">
+              <X size={14} />
             </Button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <Select
-            value={filters.statusFilter}
-            onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
-            placeholder="Filtrar por status"
-            options={[{ value: '', label: 'Todos os status' }, ...OPPORTUNITY_STATUS_OPTIONS]}
-          />
-          <Select
-            value={filters.priorityFilter}
-            onChange={(e) => setFilters({ ...filters, priorityFilter: e.target.value })}
-            placeholder="Filtrar por prioridade"
-            options={[{ value: '', label: 'Todas prioridades' }, ...PRIORITY_OPTIONS]}
-          />
+        <div className="flex flex-wrap gap-2">
+          <div className="w-36">
+            <Select
+              value={filters.statusFilter}
+              onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
+              options={[{ value: '', label: 'Status' }, ...OPPORTUNITY_STATUS_OPTIONS]}
+            />
+          </div>
+          <div className="w-32">
+            <Select
+              value={filters.priorityFilter}
+              onChange={(e) => setFilters({ ...filters, priorityFilter: e.target.value })}
+              options={[{ value: '', label: 'Prioridade' }, ...PRIORITY_OPTIONS]}
+            />
+          </div>
         </div>
       </div>
 
       {filteredOpportunities.length === 0 ? (
         <EmptyState
-          icon={<Lightbulb size={48} />}
-          title={hasActiveFilters ? 'Nenhuma oportunidade encontrada' : 'Nenhuma oportunidade ainda'}
+          icon={<Lightbulb size={36} />}
+          title={hasActiveFilters ? 'Nenhum resultado' : 'Nenhuma oportunidade ainda'}
           description={
             hasActiveFilters
-              ? 'Tente ajustar os filtros ou limpar a busca para ver mais resultados'
-              : 'Transforme seus atritos em oportunidades de produto clicando no botão "Transformar em oportunidade" na página de atritos'
+              ? 'Ajuste os filtros para ver mais resultados.'
+              : 'Oportunidades nascem a partir de atritos registrados. Transforme uma observação em hipótese de produto.'
           }
           action={
             hasActiveFilters ? (
-              <Button variant="secondary" onClick={clearFilters}>
-                <X size={18} />
+              <Button variant="secondary" size="sm" onClick={clearFilters}>
+                <X size={14} />
                 Limpar filtros
               </Button>
             ) : (
-              <Button onClick={() => navigate('/atritos')}>Ver atritos</Button>
+              <Button size="sm" onClick={() => navigate('/atritos')}>
+                Ver observações
+              </Button>
             )
           }
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {filteredOpportunities.map((opportunity) => (
-            <Card key={opportunity.id} className="p-4 md:p-5">
-              <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-4">
+            <Card key={opportunity.id} className={`py-3 px-4 border-l-2 ${getPriorityBorder(opportunity.priority)}`}>
+              <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium mb-2 text-sm md:text-base">{opportunity.title}</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {opportunity.originalProblem}
-                  </p>
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="text-sm font-medium leading-snug">{opportunity.title}</h3>
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">{formatDate(opportunity.createdAt)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-1 mb-1">{opportunity.originalProblem}</p>
                   {opportunity.hypothesis && (
-                    <p className="text-xs md:text-sm text-foreground mb-3 line-clamp-1">
+                    <p className="text-xs text-foreground/80 line-clamp-1 mb-2">
                       <span className="text-muted-foreground">Hipótese:</span> {opportunity.hypothesis}
                     </p>
                   )}
-                  <div className="flex flex-wrap gap-2">
-                    <span className={`text-xs px-2 py-1 rounded ${getPriorityColor(opportunity.priority)}`}>
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded font-medium ${getPriorityColor(opportunity.priority)}`}>
                       {opportunity.priority}
                     </span>
-                    <span className={`text-xs px-2 py-1 rounded ${getStatusColor(opportunity.status)}`}>
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded font-medium ${getStatusColor(opportunity.status)}`}>
                       {opportunity.status}
                     </span>
-                    <Tag variant="default">{opportunity.targetAudience}</Tag>
                   </div>
                 </div>
-                <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {formatDate(opportunity.createdAt)}
-                  </span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSelectedOpportunity(opportunity)}
-                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                      title="Ver detalhes"
-                    >
-                      <Eye size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleShowPrompt(opportunity)}
-                      className="text-muted-foreground hover:text-primary transition-colors p-1"
-                      title="Gerar prompt"
-                    >
-                      <FileCode size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleExportOpportunity(opportunity)}
-                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                      title="Exportar Markdown"
-                    >
-                      <Download size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteOpportunity(opportunity)}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                      title="Excluir"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => setSelectedOpportunity(opportunity)}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+                    title="Ver detalhes"
+                  >
+                    <Eye size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleShowPrompt(opportunity)}
+                    className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted"
+                    title="Gerar prompt"
+                  >
+                    <FileCode size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteOpportunity(opportunity)}
+                    className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded hover:bg-muted"
+                    title="Excluir"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             </Card>
@@ -309,43 +312,42 @@ export function Oportunidades() {
         </div>
       )}
 
-      {/* Modal de detalhes */}
       <Modal
         isOpen={!!selectedOpportunity}
         onClose={() => setSelectedOpportunity(null)}
-        title="Detalhes da Oportunidade"
+        title="Oportunidade"
       >
         {selectedOpportunity && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <h3 className="text-xl mb-2">{selectedOpportunity.title}</h3>
+              <h3 className="text-lg mb-1">{selectedOpportunity.title}</h3>
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Problema Observado</p>
+              <p className="text-xs text-muted-foreground mb-0.5">Problema observado</p>
               <p className="text-sm">{selectedOpportunity.originalProblem}</p>
             </div>
 
             {selectedOpportunity.hypothesis && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Hipótese de Solução</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Hipótese de solução</p>
                 <p className="text-sm">{selectedOpportunity.hypothesis}</p>
               </div>
             )}
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Público</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Público</p>
                 <p className="text-sm font-medium">{selectedOpportunity.targetAudience}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Prioridade</p>
-                <div className="flex flex-wrap gap-2 mt-1">
+                <p className="text-xs text-muted-foreground mb-1">Prioridade</p>
+                <div className="flex flex-wrap gap-1.5">
                   {PRIORITY_OPTIONS.map((opt) => (
                     <button
                       key={opt.value}
                       onClick={() => handleChangePriority(selectedOpportunity, opt.value)}
-                      className={`px-3 py-1 rounded text-sm transition-all ${
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                         selectedOpportunity.priority === opt.value
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -360,34 +362,34 @@ export function Oportunidades() {
 
             {selectedOpportunity.whyItMatters && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Por que isso importa</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Por que isso importa</p>
                 <p className="text-sm">{selectedOpportunity.whyItMatters}</p>
               </div>
             )}
 
             {selectedOpportunity.suggestedMVP && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">MVP Sugerido</p>
+                <p className="text-xs text-muted-foreground mb-0.5">MVP sugerido</p>
                 <p className="text-sm">{selectedOpportunity.suggestedMVP}</p>
               </div>
             )}
 
             {selectedOpportunity.whatNotToBuild && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">O que NÃO construir agora</p>
+                <p className="text-xs text-muted-foreground mb-0.5">O que NÃO construir agora</p>
                 <p className="text-sm">{selectedOpportunity.whatNotToBuild}</p>
               </div>
             )}
 
             {selectedOpportunity.validationQuestion && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Pergunta de Validação</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Pergunta de validação</p>
                 <p className="text-sm">{selectedOpportunity.validationQuestion}</p>
               </div>
             )}
 
             <div>
-              <p className="text-sm text-muted-foreground mb-2">Status</p>
+              <p className="text-xs text-muted-foreground mb-2">Status</p>
               <Select
                 value={selectedOpportunity.status}
                 onChange={(e) => {
@@ -400,19 +402,19 @@ export function Oportunidades() {
               />
             </div>
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border gap-3">
-              <div className="flex flex-wrap gap-2">
-                <Button variant="secondary" onClick={() => handleCopyOpportunity(selectedOpportunity)}>
-                  <Copy size={18} />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border/50 gap-3">
+              <div className="flex gap-1.5">
+                <Button variant="secondary" size="sm" onClick={() => handleCopyOpportunity(selectedOpportunity)}>
+                  <Copy size={14} />
                   Copiar
                 </Button>
-                <Button variant="secondary" onClick={() => handleExportOpportunity(selectedOpportunity)}>
-                  <Download size={18} />
-                  Exportar .md
+                <Button variant="secondary" size="sm" onClick={() => handleExportOpportunity(selectedOpportunity)}>
+                  <Download size={14} />
+                  Exportar
                 </Button>
               </div>
-              <Button onClick={() => handleShowPrompt(selectedOpportunity)}>
-                <FileCode size={18} />
+              <Button size="sm" onClick={() => handleShowPrompt(selectedOpportunity)}>
+                <FileCode size={14} />
                 Gerar prompt
               </Button>
             </div>
@@ -420,20 +422,19 @@ export function Oportunidades() {
         )}
       </Modal>
 
-      {/* Modal de prompt */}
       <Modal
         isOpen={!!promptModalOpportunity}
         onClose={() => setPromptModalOpportunity(null)}
-        title="Gerar Prompt para IA"
+        title="Prompt para IA"
       >
         {promptModalOpportunity && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Escolha o tipo de análise e copie o prompt gerado para o seu assistente de IA.
+              Escolha o tipo de análise e copie o prompt para seu assistente de IA.
             </p>
 
             <div>
-              <label className="text-sm font-medium mb-2 block">Tipo de prompt</label>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Tipo de prompt</label>
               <Select
                 value={selectedTemplateType}
                 onChange={(e) => {
@@ -445,28 +446,28 @@ export function Oportunidades() {
                   label: t.label,
                 }))}
               />
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-[11px] text-muted-foreground/60 mt-1">
                 {PROMPT_TEMPLATES.find((t) => t.type === selectedTemplateType)?.description}
               </p>
             </div>
 
-            <div className="bg-muted rounded-lg p-4 max-h-[50vh] overflow-y-auto">
-              <pre className="text-xs whitespace-pre-wrap font-mono text-foreground">
+            <div className="bg-muted/50 rounded-lg p-3 max-h-[40vh] overflow-y-auto">
+              <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/80 leading-relaxed">
                 {generatedPrompt}
               </pre>
             </div>
 
-            <div className="flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setPromptModalOpportunity(null)}>
+            <div className="flex justify-end gap-2">
+              <Button variant="secondary" size="sm" onClick={() => setPromptModalOpportunity(null)}>
                 Fechar
               </Button>
-              <Button variant="secondary" onClick={handleExportPrompt}>
-                <Download size={18} />
-                Exportar .md
+              <Button variant="secondary" size="sm" onClick={handleExportPrompt}>
+                <Download size={14} />
+                Exportar
               </Button>
-              <Button onClick={handleCopyPrompt}>
-                <Copy size={18} />
-                Copiar prompt
+              <Button size="sm" onClick={handleCopyPrompt}>
+                <Copy size={14} />
+                Copiar
               </Button>
             </div>
           </div>

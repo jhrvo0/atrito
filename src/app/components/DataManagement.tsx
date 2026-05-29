@@ -14,7 +14,7 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
 
   const handleExport = () => {
     downloadBackup();
-    showToast('Backup exportado com sucesso!');
+    showToast('Backup exportado!');
   };
 
   const handleImport = () => {
@@ -41,25 +41,25 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
   const handleClear = async () => {
     const confirmed = await showConfirm({
       title: 'Limpar todos os dados?',
-      message: 'Esta ação irá remover permanentemente todos os atritos, oportunidades e contextos de investigação. Esta ação não pode ser desfeita.',
+      message: 'Todos os atritos, oportunidades e contextos serão removidos permanentemente.',
       confirmLabel: 'Limpar tudo',
     });
     if (!confirmed) return;
 
     const doubleConfirm = await showConfirm({
       title: 'Tem certeza absoluta?',
-      message: 'Todos os seus dados serão perdidos permanentemente. Recomendamos fazer um backup antes.',
+      message: 'Recomendamos fazer um backup antes.',
       confirmLabel: 'Sim, limpar tudo',
     });
     if (!doubleConfirm) return;
 
     clearAllData();
-    showToast('Todos os dados foram removidos.', 'info');
+    showToast('Dados removidos.', 'info');
     onDataChanged?.();
   };
 
   return (
-    <div className="flex flex-wrap gap-3">
+    <div className="flex flex-wrap gap-2">
       <input
         ref={fileInputRef}
         type="file"
@@ -67,17 +67,17 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
         onChange={handleFileChange}
         className="hidden"
       />
-      <Button variant="secondary" onClick={handleExport}>
-        <Download size={18} />
-        Exportar backup
+      <Button variant="secondary" size="sm" onClick={handleExport}>
+        <Download size={14} />
+        Exportar
       </Button>
-      <Button variant="secondary" onClick={handleImport}>
-        <Upload size={18} />
-        Importar backup
+      <Button variant="secondary" size="sm" onClick={handleImport}>
+        <Upload size={14} />
+        Importar
       </Button>
-      <Button variant="ghost" onClick={handleClear}>
-        <Trash2 size={18} />
-        Limpar dados
+      <Button variant="ghost" size="sm" onClick={handleClear}>
+        <Trash2 size={14} />
+        Limpar
       </Button>
     </div>
   );

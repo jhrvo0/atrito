@@ -1,148 +1,104 @@
 import { useNavigate } from 'react-router-dom';
-import { Plus, FileText, Lightbulb, MapPin, AlertTriangle } from 'lucide-react';
+import { Plus, ArrowRight } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { DataManagement } from '../components/DataManagement';
 import { useApp } from '../context/AppContext';
+import { formatDate } from '../utils/date';
 
 export function Inicio() {
   const navigate = useNavigate();
   const { atritos, opportunities } = useApp();
 
-  const highIntensityCount = atritos.filter((a) => a.intensity === 'alta').length;
-
-  const contextCounts = atritos.reduce(
-    (acc, atrito) => {
-      acc[atrito.context] = (acc[atrito.context] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-
-  const mostCommonContext = Object.entries(contextCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Nenhum';
-
-  const stats = [
-    {
-      label: 'Total de Atritos',
-      value: atritos.length,
-      icon: FileText,
-      color: 'text-blue-600',
-    },
-    {
-      label: 'Oportunidades',
-      value: opportunities.length,
-      icon: Lightbulb,
-      color: 'text-green-600',
-    },
-    {
-      label: 'Contexto Recorrente',
-      value: mostCommonContext.charAt(0).toUpperCase() + mostCommonContext.slice(1),
-      icon: MapPin,
-      color: 'text-purple-600',
-    },
-    {
-      label: 'Alta Intensidade',
-      value: highIntensityCount,
-      icon: AlertTriangle,
-      color: 'text-orange-600',
-    },
-  ];
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'observado':
-        return 'bg-blue-50 text-blue-700';
-      case 'investigando':
-        return 'bg-purple-50 text-purple-700';
-      case 'virou ideia':
-        return 'bg-green-50 text-green-700';
-      case 'descartado':
-        return 'bg-gray-50 text-gray-700';
-      default:
-        return 'bg-gray-50 text-gray-700';
-    }
-  };
+  const recentAtritos = atritos.slice(0, 4);
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="mb-8 md:mb-12">
-        <h1 className="text-3xl md:text-4xl mb-2 md:mb-3">Atrito</h1>
-        <p className="text-lg md:text-xl text-muted-foreground mb-4 md:mb-8">Pequenos incômodos revelam bons produtos.</p>
-        <p className="text-sm md:text-base text-muted-foreground max-w-2xl mb-6 md:mb-8">
-          Registre os pequenos problemas, fricções e incômodos do seu dia a dia. Transforme essas observações
-          em oportunidades de produto, melhorias de experiência e ideias de pesquisa.
+    <div className="max-w-3xl mx-auto">
+      <div className="mb-10">
+        <p className="text-xs uppercase tracking-widest text-muted-foreground mb-3 font-medium">Caderno de pesquisa</p>
+        <h1 className="text-3xl md:text-4xl mb-3 leading-tight">
+          Observe o que normalmente<br className="hidden sm:block" /> passa despercebido.
+        </h1>
+        <p className="text-base text-muted-foreground mb-6 max-w-lg leading-relaxed">
+          Pequenos incômodos revelam bons produtos. Registre fricções do cotidiano,
+          extraia padrões e transforme observações em oportunidades.
         </p>
-        <Button onClick={() => navigate('/atritos/novo')} size="lg" className="w-full md:w-auto">
-          <Plus size={20} />
-          Registrar atrito
+        <Button onClick={() => navigate('/atritos/novo')}>
+          <Plus size={16} />
+          Nova observação
         </Button>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-8 md:mb-12">
-        {stats.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <Card key={index} className="p-4">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-xs md:text-sm text-muted-foreground mb-1">{stat.label}</p>
-                  <p className="text-2xl md:text-3xl">{stat.value}</p>
-                </div>
-                <Icon className={stat.color} size={20} />
-              </div>
-            </Card>
-          );
-        })}
+      <div className="grid grid-cols-3 gap-3 mb-10">
+        <Card className="text-center py-4">
+          <p className="text-2xl font-display">{atritos.length}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">observações</p>
+        </Card>
+        <Card className="text-center py-4">
+          <p className="text-2xl font-display">{opportunities.length}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">oportunidades</p>
+        </Card>
+        <Card className="text-center py-4">
+          <p className="text-2xl font-display">{atritos.filter((a) => a.intensity === 'alta').length}</p>
+          <p className="text-xs text-muted-foreground mt-0.5">alta intensidade</p>
+        </Card>
       </div>
 
-      <div>
-        <h2 className="text-2xl mb-4">Atritos Recentes</h2>
+      <div className="mb-10">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg">Observações recentes</h2>
+          {atritos.length > 0 && (
+            <button
+              onClick={() => navigate('/atritos')}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+            >
+              Ver todas <ArrowRight size={12} />
+            </button>
+          )}
+        </div>
+
         {atritos.length === 0 ? (
-          <Card className="p-8 text-center">
-            <p className="text-muted-foreground mb-4">Nenhum atrito registrado ainda.</p>
-            <Button onClick={() => navigate('/atritos/novo')}>
-              <Plus size={20} />
-              Registrar primeiro atrito
+          <Card className="py-8 text-center">
+            <p className="text-sm text-muted-foreground mb-1">Nenhuma observação ainda.</p>
+            <p className="text-xs text-muted-foreground/60 mb-4">
+              Comece notando algo que te incomodou hoje — pode ser qualquer coisa.
+            </p>
+            <Button variant="secondary" size="sm" onClick={() => navigate('/atritos/novo')}>
+              <Plus size={14} />
+              Registrar primeira observação
             </Button>
           </Card>
         ) : (
-          <div className="space-y-3">
-            {atritos.slice(0, 5).map((atrito) => (
-              <Card key={atrito.id} onClick={() => navigate('/atritos')} className="p-4 md:p-5">
-                <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium mb-1 text-sm md:text-base">{atrito.title}</h3>
-                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">{atrito.description}</p>
+          <div className="space-y-2">
+            {recentAtritos.map((atrito) => (
+              <button
+                key={atrito.id}
+                onClick={() => navigate('/atritos')}
+                className="w-full text-left"
+              >
+                <Card className="py-3 px-4 hover:border-border transition-all">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-medium truncate">{atrito.title}</h3>
+                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{atrito.description}</p>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-[11px] text-muted-foreground capitalize">{atrito.context}</span>
+                      <span className={`w-1.5 h-1.5 rounded-full ${
+                        atrito.intensity === 'alta' ? 'bg-orange-500' :
+                        atrito.intensity === 'média' ? 'bg-amber-400' : 'bg-stone-300'
+                      }`} />
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-muted-foreground capitalize">{atrito.context}</span>
-                    <span
-                      className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
-                        atrito.intensity === 'alta'
-                          ? 'bg-orange-100 text-orange-700'
-                          : atrito.intensity === 'média'
-                            ? 'bg-yellow-100 text-yellow-700'
-                            : 'bg-gray-100 text-gray-700'
-                      }`}
-                    >
-                      {atrito.intensity}
-                    </span>
-                    <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${getStatusColor(atrito.status)}`}>
-                      {atrito.status}
-                    </span>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </button>
             ))}
           </div>
         )}
       </div>
 
-      <div className="mt-12 border-t border-border pt-8">
-        <h2 className="text-xl mb-4">Dados</h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          Exporte um backup dos seus dados ou importe um backup anterior.
-        </p>
+      <div className="border-t border-border/50 pt-6">
+        <p className="text-xs text-muted-foreground/60 mb-3">Dados locais</p>
         <DataManagement onDataChanged={() => window.location.reload()} />
       </div>
     </div>

@@ -19,7 +19,7 @@ export function showToast(message: string, type: Toast['type'] = 'success') {
   setTimeout(() => {
     toastsState = toastsState.filter((t) => t.id !== id);
     toastListener?.(toastsState);
-  }, 3000);
+  }, 2500);
 }
 
 export function ToastContainer() {
@@ -38,7 +38,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-2">
+    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-1.5">
       {toasts.map((toast) => {
         const colors = {
           success: 'bg-foreground text-background',
@@ -49,11 +49,11 @@ export function ToastContainer() {
         return (
           <div
             key={toast.id}
-            className={`${colors} px-4 py-3 rounded-lg shadow-lg text-sm flex items-center gap-3 min-w-[200px] max-w-[360px] animate-in slide-in-from-bottom-2 fade-in duration-200`}
+            className={`${colors} px-3 py-2 rounded-lg shadow-lg text-xs flex items-center gap-2 min-w-[160px] max-w-[320px] animate-in slide-in-from-bottom-2 fade-in duration-200`}
           >
             <span className="flex-1">{toast.message}</span>
-            <button onClick={() => dismiss(toast.id)} className="opacity-70 hover:opacity-100 transition-opacity">
-              <X size={14} />
+            <button onClick={() => dismiss(toast.id)} className="opacity-60 hover:opacity-100 transition-opacity">
+              <X size={12} />
             </button>
           </div>
         );

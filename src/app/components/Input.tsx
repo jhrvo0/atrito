@@ -18,8 +18,8 @@ export function Input({ type = 'text', placeholder, value, onChange, className =
         placeholder={placeholder}
         value={value}
         onChange={onChange}
-        className={`w-full border border-border bg-input-background rounded-md px-3.5 py-2.5 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all ${
-          icon ? 'pl-10' : ''
+        className={`w-full border border-border/60 bg-input-background rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-1 focus:ring-ring/40 focus:border-border transition-all ${
+          icon ? 'pl-9' : ''
         } ${className}`}
       />
     </div>

@@ -87,7 +87,7 @@ export function Atritos() {
     addOpportunity(newOpportunity);
     updateAtrito(atrito.id, { status: 'virou ideia' });
     setSelectedAtrito(null);
-    showToast('Oportunidade criada com sucesso!');
+    showToast('Oportunidade criada!');
     navigate('/oportunidades');
   };
 
@@ -102,7 +102,7 @@ export function Atritos() {
     const context = getContextForAtrito(atrito.id);
     const markdown = exportAtritoToMarkdown(atrito, context);
     downloadMarkdown(markdown, `atrito-${atrito.id}.md`);
-    showToast('Arquivo Markdown baixado!');
+    showToast('Markdown baixado!');
   };
 
   const handleCopyAtrito = async (atrito: Atrito) => {
@@ -110,7 +110,7 @@ export function Atritos() {
     const markdown = exportAtritoToMarkdown(atrito, context);
     const success = await copyToClipboard(markdown);
     if (success) {
-      showToast('Atrito copiado para a área de transferência!');
+      showToast('Copiado para a área de transferência!');
     }
   };
 
@@ -119,9 +119,9 @@ export function Atritos() {
 
     if (linkedOpportunities.length > 0) {
       const confirmed = await showConfirm({
-        title: 'Excluir atrito',
-        message: `Este atrito está vinculado a ${linkedOpportunities.length} oportunidade(s). O que deseja fazer?`,
-        confirmLabel: 'Excluir atrito e oportunidades',
+        title: 'Excluir observação',
+        message: `Esta observação está vinculada a ${linkedOpportunities.length} oportunidade(s). O que deseja fazer?`,
+        confirmLabel: 'Excluir tudo',
         cancelLabel: 'Cancelar',
       });
       if (!confirmed) return;
@@ -131,8 +131,8 @@ export function Atritos() {
       }
     } else {
       const confirmed = await showConfirm({
-        title: 'Excluir atrito',
-        message: `Tem certeza que deseja excluir "${atrito.title}"? Esta ação não pode ser desfeita.`,
+        title: 'Excluir observação',
+        message: `Tem certeza que deseja excluir "${atrito.title}"?`,
         confirmLabel: 'Excluir',
       });
       if (!confirmed) return;
@@ -140,123 +140,130 @@ export function Atritos() {
 
     deleteAtrito(atrito.id);
     setSelectedAtrito(null);
-    showToast('Atrito excluído.');
+    showToast('Observação excluída.');
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'observado':
-        return 'bg-blue-50 text-blue-700';
+        return 'bg-stone-100 text-stone-600 dark:bg-stone-800 dark:text-stone-300';
       case 'investigando':
-        return 'bg-purple-50 text-purple-700';
+        return 'bg-violet-50 text-violet-700 dark:bg-violet-950 dark:text-violet-300';
       case 'virou ideia':
-        return 'bg-green-50 text-green-700';
+        return 'bg-emerald-50 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-300';
       case 'descartado':
-        return 'bg-gray-50 text-gray-700';
+        return 'bg-muted text-muted-foreground';
       default:
-        return 'bg-gray-50 text-gray-700';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   return (
-    <div className="max-w-6xl mx-auto">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 md:mb-8">
+    <div className="max-w-3xl mx-auto">
+      <div className="flex items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-2xl md:text-3xl mb-1 md:mb-2">Atritos</h1>
-          <p className="text-sm md:text-base text-muted-foreground">Registros de problemas e fricções observados</p>
+          <h1 className="text-2xl mb-0.5">Atritos</h1>
+          <p className="text-xs text-muted-foreground">Observações de fricções cotidianas</p>
         </div>
-        <Button onClick={() => navigate('/atritos/novo')} className="w-full sm:w-auto">
-          <Plus size={20} />
-          Novo atrito
+        <Button onClick={() => navigate('/atritos/novo')} size="sm">
+          <Plus size={14} />
+          Nova
         </Button>
       </div>
 
-      <div className="mb-6 space-y-3 md:space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
+      <div className="mb-4 space-y-2">
+        <div className="flex gap-2">
           <div className="flex-1">
             <Input
-              placeholder="Buscar atritos..."
+              placeholder="Buscar..."
               value={filters.searchTerm}
               onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-              icon={<Search size={18} />}
+              icon={<Search size={14} />}
             />
           </div>
           {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters} className="w-full sm:w-auto">
-              <X size={18} />
-              <span className="hidden sm:inline">Limpar filtros</span>
-              <span className="sm:hidden">Limpar</span>
+            <Button variant="ghost" onClick={clearFilters} size="sm">
+              <X size={14} />
             </Button>
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-          <Select
-            value={filters.contextFilter}
-            onChange={(e) => setFilters({ ...filters, contextFilter: e.target.value })}
-            placeholder="Contexto"
-            options={[{ value: '', label: 'Todos os contextos' }, ...CONTEXT_OPTIONS]}
-          />
-
-          <Select
-            value={filters.intensityFilter}
-            onChange={(e) => setFilters({ ...filters, intensityFilter: e.target.value })}
-            placeholder="Intensidade"
-            options={[{ value: '', label: 'Todas intensidades' }, ...INTENSITY_OPTIONS]}
-          />
-
-          <Select
-            value={filters.frequencyFilter}
-            onChange={(e) => setFilters({ ...filters, frequencyFilter: e.target.value })}
-            placeholder="Frequência"
-            options={[{ value: '', label: 'Todas frequências' }, ...FREQUENCY_OPTIONS]}
-          />
-
-          <Select
-            value={filters.statusFilter}
-            onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
-            placeholder="Status"
-            options={[{ value: '', label: 'Todos os status' }, ...ATRITO_STATUS_OPTIONS]}
-          />
+        <div className="flex flex-wrap gap-2">
+          <div className="w-36">
+            <Select
+              value={filters.contextFilter}
+              onChange={(e) => setFilters({ ...filters, contextFilter: e.target.value })}
+              options={[{ value: '', label: 'Contexto' }, ...CONTEXT_OPTIONS]}
+            />
+          </div>
+          <div className="w-32">
+            <Select
+              value={filters.intensityFilter}
+              onChange={(e) => setFilters({ ...filters, intensityFilter: e.target.value })}
+              options={[{ value: '', label: 'Intensidade' }, ...INTENSITY_OPTIONS]}
+            />
+          </div>
+          <div className="w-36">
+            <Select
+              value={filters.frequencyFilter}
+              onChange={(e) => setFilters({ ...filters, frequencyFilter: e.target.value })}
+              options={[{ value: '', label: 'Frequência' }, ...FREQUENCY_OPTIONS]}
+            />
+          </div>
+          <div className="w-32">
+            <Select
+              value={filters.statusFilter}
+              onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
+              options={[{ value: '', label: 'Status' }, ...ATRITO_STATUS_OPTIONS]}
+            />
+          </div>
         </div>
       </div>
 
       {filteredAtritos.length === 0 ? (
         <EmptyState
-          icon={<FileText size={48} />}
-          title="Nenhum atrito encontrado"
+          icon={<FileText size={36} />}
+          title={hasActiveFilters ? 'Nenhum resultado' : 'Nenhuma observação ainda'}
           description={
             hasActiveFilters
-              ? 'Tente ajustar os filtros ou limpar a busca para ver mais resultados'
-              : 'Comece registrando seu primeiro atrito'
+              ? 'Ajuste os filtros para ver mais resultados.'
+              : 'Comece a notar as fricções do seu dia a dia. Toda boa observação pode virar um produto.'
+          }
+          examples={
+            !hasActiveFilters
+              ? ['Fila demorada no caixa', 'App que trava no celular', 'Instruções confusas de montagem']
+              : undefined
           }
           action={
             hasActiveFilters ? (
-              <Button variant="secondary" onClick={clearFilters}>
-                <X size={18} />
+              <Button variant="secondary" size="sm" onClick={clearFilters}>
+                <X size={14} />
                 Limpar filtros
               </Button>
             ) : (
-              <Button onClick={() => navigate('/atritos/novo')}>
-                <Plus size={20} />
-                Registrar primeiro atrito
+              <Button size="sm" onClick={() => navigate('/atritos/novo')}>
+                <Plus size={14} />
+                Registrar observação
               </Button>
             )
           }
         />
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2">
           {filteredAtritos.map((atrito) => (
-            <Card key={atrito.id} className="p-4 md:p-5">
-              <div className="flex flex-col md:flex-row md:items-start gap-3 md:gap-4">
+            <Card key={atrito.id} className="py-3 px-4">
+              <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-medium mb-2 text-sm md:text-base">{atrito.title}</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground mb-3 line-clamp-2">{atrito.description}</p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex items-start justify-between gap-2 mb-1">
+                    <h3 className="text-sm font-medium leading-snug">{atrito.title}</h3>
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">{formatDate(atrito.createdAt)}</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{atrito.description}</p>
+                  <div className="flex flex-wrap items-center gap-1.5">
                     <Tag variant="context">{atrito.context}</Tag>
                     <Tag variant="intensity">{atrito.intensity}</Tag>
                     <Tag variant="frequency">{atrito.frequency}</Tag>
-                    <span className={`text-xs px-2 py-1 rounded ${getStatusColor(atrito.status)}`}>
+                    <span className={`text-[11px] px-1.5 py-0.5 rounded font-medium ${getStatusColor(atrito.status)}`}>
                       {atrito.status}
                     </span>
                     {getContextForAtrito(atrito.id) && (
@@ -264,39 +271,29 @@ export function Atritos() {
                     )}
                   </div>
                 </div>
-                <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(atrito.createdAt)}</span>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => setSelectedAtrito(atrito)}
-                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                      title="Ver detalhes"
-                    >
-                      <Eye size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleTransformToOpportunity(atrito)}
-                      className="text-muted-foreground hover:text-primary transition-colors p-1"
-                      title="Transformar em oportunidade"
-                      disabled={atrito.status === 'virou ideia'}
-                    >
-                      <Lightbulb size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleExportAtrito(atrito)}
-                      className="text-muted-foreground hover:text-foreground transition-colors p-1"
-                      title="Exportar Markdown"
-                    >
-                      <Download size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteAtrito(atrito)}
-                      className="text-muted-foreground hover:text-destructive transition-colors p-1"
-                      title="Excluir"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </div>
+                <div className="flex items-center gap-1 shrink-0">
+                  <button
+                    onClick={() => setSelectedAtrito(atrito)}
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+                    title="Ver detalhes"
+                  >
+                    <Eye size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleTransformToOpportunity(atrito)}
+                    className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted"
+                    title="Transformar em oportunidade"
+                    disabled={atrito.status === 'virou ideia'}
+                  >
+                    <Lightbulb size={14} />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteAtrito(atrito)}
+                    className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded hover:bg-muted"
+                    title="Excluir"
+                  >
+                    <Trash2 size={14} />
+                  </button>
                 </div>
               </div>
             </Card>
@@ -304,48 +301,48 @@ export function Atritos() {
         </div>
       )}
 
-      <Modal isOpen={!!selectedAtrito} onClose={() => setSelectedAtrito(null)} title="Detalhes do Atrito">
+      <Modal isOpen={!!selectedAtrito} onClose={() => setSelectedAtrito(null)} title="Observação">
         {selectedAtrito && (
-          <div className="space-y-6">
+          <div className="space-y-5">
             <div>
-              <h3 className="text-xl mb-2">{selectedAtrito.title}</h3>
-              <p className="text-muted-foreground">{selectedAtrito.description}</p>
+              <h3 className="text-lg mb-1">{selectedAtrito.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{selectedAtrito.description}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Contexto</p>
-                <p className="font-medium">{selectedAtrito.context}</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Contexto</p>
+                <p className="text-sm font-medium capitalize">{selectedAtrito.context}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Intensidade</p>
-                <p className="font-medium">{selectedAtrito.intensity}</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Intensidade</p>
+                <p className="text-sm font-medium capitalize">{selectedAtrito.intensity}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Frequência</p>
-                <p className="font-medium">{selectedAtrito.frequency}</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Frequência</p>
+                <p className="text-sm font-medium capitalize">{selectedAtrito.frequency}</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Quem foi afetado</p>
-                <p className="font-medium">{selectedAtrito.affected}</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Quem foi afetado</p>
+                <p className="text-sm font-medium capitalize">{selectedAtrito.affected}</p>
               </div>
             </div>
 
             {selectedAtrito.improvisedSolution && (
               <div>
-                <p className="text-sm text-muted-foreground mb-1">Solução improvisada</p>
+                <p className="text-xs text-muted-foreground mb-0.5">Solução improvisada</p>
                 <p className="text-sm">{selectedAtrito.improvisedSolution}</p>
               </div>
             )}
 
             <div>
-              <p className="text-sm text-muted-foreground mb-2">Status</p>
-              <div className="flex flex-wrap gap-2">
+              <p className="text-xs text-muted-foreground mb-2">Status</p>
+              <div className="flex flex-wrap gap-1.5">
                 {ATRITO_STATUS_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
                     onClick={() => handleChangeStatus(selectedAtrito, opt.value)}
-                    className={`px-3 py-1.5 rounded text-sm transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
                       selectedAtrito.status === opt.value
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -361,7 +358,7 @@ export function Atritos() {
               const existingContext = getContextForAtrito(selectedAtrito.id);
               if (existingContext) {
                 return (
-                  <div className="border-t border-border pt-4">
+                  <div className="border-t border-border/50 pt-4">
                     <InvestigationSummary
                       context={existingContext}
                       onEdit={() => setShowInvestigationForm(true)}
@@ -372,32 +369,33 @@ export function Atritos() {
               return null;
             })()}
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border gap-3">
-              <div className="flex gap-2">
-                <Button variant="secondary" onClick={() => handleCopyAtrito(selectedAtrito)}>
-                  <Copy size={18} />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border/50 gap-3">
+              <div className="flex gap-1.5">
+                <Button variant="secondary" size="sm" onClick={() => handleCopyAtrito(selectedAtrito)}>
+                  <Copy size={14} />
                   Copiar
                 </Button>
-                <Button variant="secondary" onClick={() => handleExportAtrito(selectedAtrito)}>
-                  <Download size={18} />
-                  Exportar .md
+                <Button variant="secondary" size="sm" onClick={() => handleExportAtrito(selectedAtrito)}>
+                  <Download size={14} />
+                  Exportar
                 </Button>
-                <Button variant="secondary" onClick={() => setShowInvestigationForm(true)}>
-                  <PenLine size={18} />
-                  Aprofundar atrito
+                <Button variant="secondary" size="sm" onClick={() => setShowInvestigationForm(true)}>
+                  <PenLine size={14} />
+                  Aprofundar
                 </Button>
               </div>
-              <div className="flex flex-col items-end gap-1.5">
+              <div className="flex flex-col items-end gap-1">
                 {!getContextForAtrito(selectedAtrito.id) && selectedAtrito.status !== 'virou ideia' && (
-                  <p className="text-xs text-muted-foreground text-right max-w-[260px]">
-                    Você pode transformar agora, mas aprofundar o contexto antes tende a gerar prompts melhores.
+                  <p className="text-[11px] text-muted-foreground text-right max-w-[220px]">
+                    Aprofundar o contexto antes de transformar tende a gerar prompts melhores.
                   </p>
                 )}
                 <Button
+                  size="sm"
                   onClick={() => handleTransformToOpportunity(selectedAtrito)}
                   disabled={selectedAtrito.status === 'virou ideia'}
                 >
-                  <Lightbulb size={18} />
+                  <Lightbulb size={14} />
                   Transformar em oportunidade
                 </Button>
               </div>
@@ -414,7 +412,7 @@ export function Atritos() {
           existingContext={getContextForAtrito(selectedAtrito.id)}
           onSave={(context) => {
             addInvestigationContext(context);
-            showToast('Contexto salvo com sucesso!', 'success');
+            showToast('Contexto salvo!', 'success');
           }}
         />
       )}

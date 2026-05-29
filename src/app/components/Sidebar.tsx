@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Lightbulb, TrendingUp } from 'lucide-react';
+import { Home, FileText, Lightbulb, TrendingUp, Sun, Moon } from 'lucide-react';
+import { useApp } from '../context/AppContext';
 
 const navItems = [
   { to: '/', label: 'Início', icon: Home },
@@ -9,14 +10,16 @@ const navItems = [
 ];
 
 export function Sidebar() {
+  const { theme, toggleTheme } = useApp();
+
   return (
-    <aside className="hidden md:flex w-60 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex-col">
-      <div className="p-6 border-b border-sidebar-border">
-        <h1 className="text-2xl font-display">Atrito</h1>
-        <p className="text-sm text-muted-foreground mt-1">Pequenos incômodos, bons produtos</p>
+    <aside className="hidden md:flex w-56 bg-sidebar border-r border-sidebar-border h-screen sticky top-0 flex-col">
+      <div className="px-5 pt-6 pb-4">
+        <h1 className="text-xl font-display tracking-tight">Atrito</h1>
+        <p className="text-xs text-muted-foreground mt-0.5">Pequenos incômodos, bons produtos</p>
       </div>
 
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 px-3 space-y-0.5">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -25,19 +28,29 @@ export function Sidebar() {
               to={item.to}
               end={item.to === '/'}
               className={({ isActive }) =>
-                `w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-150 text-left ${
+                `w-full flex items-center gap-2.5 px-3 py-2 rounded-md transition-colors duration-150 text-[13px] ${
                   isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                    ? 'bg-sidebar-accent text-foreground font-medium'
+                    : 'text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground'
                 }`
               }
             >
-              <Icon size={20} />
+              <Icon size={16} strokeWidth={1.75} />
               <span>{item.label}</span>
             </NavLink>
           );
         })}
       </nav>
+
+      <div className="px-3 pb-4">
+        <button
+          onClick={toggleTheme}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] text-muted-foreground hover:bg-sidebar-accent/50 hover:text-foreground transition-colors duration-150"
+        >
+          {theme === 'light' ? <Moon size={16} strokeWidth={1.75} /> : <Sun size={16} strokeWidth={1.75} />}
+          <span>{theme === 'light' ? 'Modo escuro' : 'Modo claro'}</span>
+        </button>
+      </div>
     </aside>
   );
 }

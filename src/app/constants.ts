@@ -1,4 +1,17 @@
-import { Context, Intensity, Frequency, Affected, AtritoStatus, OpportunityStatus, Priority } from './types';
+import {
+  Context,
+  Intensity,
+  Frequency,
+  Affected,
+  AtritoStatus,
+  OpportunityStatus,
+  Priority,
+  TimesOccurred,
+  EmotionalImpact,
+  PracticalImpact,
+  ProblemClarity,
+  InvestigationStatus,
+} from './types';
 
 export const CONTEXT_OPTIONS: { value: Context; label: string }[] = [
   { value: 'casa', label: 'Casa' },
@@ -78,4 +91,63 @@ export function isValidOpportunityStatus(value: string): value is OpportunitySta
 
 export function isValidPriority(value: string): value is Priority {
   return (PRIORITY_OPTIONS as { value: string }[]).some((o) => o.value === value);
+}
+
+export const TIMES_OCCURRED_OPTIONS: { value: TimesOccurred; label: string }[] = [
+  { value: 'primeira vez', label: 'Primeira vez' },
+  { value: '2-3 vezes', label: '2-3 vezes' },
+  { value: 'várias vezes', label: 'Várias vezes' },
+  { value: 'toda semana', label: 'Toda semana' },
+  { value: 'quase sempre', label: 'Quase sempre' },
+];
+
+export const EMOTIONAL_IMPACT_OPTIONS: { value: EmotionalImpact; label: string }[] = [
+  { value: 'nenhum', label: 'Nenhum' },
+  { value: 'leve', label: 'Leve' },
+  { value: 'moderado', label: 'Moderado' },
+  { value: 'forte', label: 'Forte' },
+  { value: 'muito forte', label: 'Muito forte' },
+];
+
+export const PRACTICAL_IMPACT_OPTIONS: { value: PracticalImpact; label: string }[] = [
+  { value: 'nenhum', label: 'Nenhum' },
+  { value: 'leve', label: 'Leve' },
+  { value: 'moderado', label: 'Moderado' },
+  { value: 'forte', label: 'Forte' },
+  { value: 'muito forte', label: 'Muito forte' },
+];
+
+export const PROBLEM_CLARITY_OPTIONS: { value: ProblemClarity; label: string }[] = [
+  { value: 'muito vago', label: 'Muito vago' },
+  { value: 'pouco claro', label: 'Pouco claro' },
+  { value: 'razoavelmente claro', label: 'Razoavelmente claro' },
+  { value: 'claro', label: 'Claro' },
+  { value: 'muito claro', label: 'Muito claro' },
+];
+
+export const INVESTIGATION_STATUS_OPTIONS: { value: InvestigationStatus; label: string }[] = [
+  { value: 'não iniciada', label: 'Não iniciada' },
+  { value: 'em andamento', label: 'Em andamento' },
+  { value: 'concluída', label: 'Concluída' },
+  { value: 'arquivada', label: 'Arquivada' },
+];
+
+export function isValidTimesOccurred(value: string): value is TimesOccurred {
+  return (TIMES_OCCURRED_OPTIONS as { value: string }[]).some((o) => o.value === value);
+}
+
+export function isValidEmotionalImpact(value: string): value is EmotionalImpact {
+  return (EMOTIONAL_IMPACT_OPTIONS as { value: string }[]).some((o) => o.value === value);
+}
+
+export function isValidPracticalImpact(value: string): value is PracticalImpact {
+  return (PRACTICAL_IMPACT_OPTIONS as { value: string }[]).some((o) => o.value === value);
+}
+
+export function isValidProblemClarity(value: string): value is ProblemClarity {
+  return (PROBLEM_CLARITY_OPTIONS as { value: string }[]).some((o) => o.value === value);
+}
+
+export function isValidInvestigationStatus(value: string): value is InvestigationStatus {
+  return (INVESTIGATION_STATUS_OPTIONS as { value: string }[]).some((o) => o.value === value);
 }

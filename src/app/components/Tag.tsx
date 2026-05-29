@@ -2,7 +2,7 @@ import React from 'react';
 
 interface TagProps {
   children: React.ReactNode;
-  variant?: 'context' | 'intensity' | 'frequency' | 'status' | 'default';
+  variant?: 'context' | 'intensity' | 'frequency' | 'status' | 'investigated' | 'default';
   className?: string;
 }
 
@@ -12,6 +12,7 @@ export function Tag({ children, variant = 'default', className = '' }: TagProps)
     intensity: 'bg-orange-50 text-orange-700',
     frequency: 'bg-purple-50 text-purple-700',
     status: 'bg-green-50 text-green-700',
+    investigated: 'bg-amber-50 text-amber-700',
     default: 'bg-muted text-muted-foreground'
   };
 

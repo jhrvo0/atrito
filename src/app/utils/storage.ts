@@ -1,9 +1,10 @@
-import { Atrito, Opportunity } from '../types';
+import { Atrito, Opportunity, AtritoInvestigationContext } from '../types';
 
 const ATRITOS_KEY = 'atrito-atritos';
 const OPPORTUNITIES_KEY = 'atrito-opportunities';
 const FILTERS_KEY = 'atrito-filters';
 const OPPORTUNITY_FILTERS_KEY = 'atrito-opportunity-filters';
+const INVESTIGATION_CONTEXTS_KEY = 'atrito-investigation-contexts';
 
 export interface FiltersState {
   searchTerm: string;
@@ -87,4 +88,53 @@ export function loadOpportunityFilters(): OpportunityFiltersState {
 
 export function saveOpportunityFilters(filters: OpportunityFiltersState): void {
   localStorage.setItem(OPPORTUNITY_FILTERS_KEY, JSON.stringify(filters));
+}
+
+export function loadInvestigationContexts(): AtritoInvestigationContext[] {
+  try {
+    const data = localStorage.getItem(INVESTIGATION_CONTEXTS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function saveInvestigationContexts(contexts: AtritoInvestigationContext[]): void {
+  localStorage.setItem(INVESTIGATION_CONTEXTS_KEY, JSON.stringify(contexts));
+}
+
+export function findInvestigationContextByAtritoId(
+  atritoId: string
+): AtritoInvestigationContext | undefined {
+  const contexts = loadInvestigationContexts();
+  return contexts.find((c) => c.atritoId === atritoId);
+}
+
+export function saveOrUpdateInvestigationContext(
+  context: AtritoInvestigationContext
+): void {
+  const contexts = loadInvestigationContexts();
+  const index = contexts.findIndex((c) => c.atritoId === context.atritoId);
+
+  if (index >= 0) {
+    contexts[index] = { ...contexts[index], ...context, updatedAt: new Date().toISOString() };
+  } else {
+    contexts.push(context);
+  }
+
+  saveInvestigationContexts(contexts);
+}
+
+export function removeInvestigationContext(atritoId: string): void {
+  const contexts = loadInvestigationContexts();
+  const filtered = contexts.filter((c) => c.atritoId !== atritoId);
+  saveInvestigationContexts(filtered);
+}
+
+export function hasInvestigationContext(
+  atritoId: string,
+  contexts?: AtritoInvestigationContext[]
+): boolean {
+  const list = contexts ?? loadInvestigationContexts();
+  return list.some((c) => c.atritoId === atritoId);
 }

@@ -1,7 +1,33 @@
-import { Atrito, Opportunity } from '../types';
+import { Atrito, Opportunity, AtritoInvestigationContext } from '../types';
 import { formatDate } from './date';
 
-export function exportAtritoToMarkdown(atrito: Atrito): string {
+export function exportInvestigationContextToMarkdown(ctx: AtritoInvestigationContext): string {
+  const lines = [
+    '## Contexto Aprofundado',
+    '',
+  ];
+
+  if (ctx.scenario) lines.push(`**Cenário:** ${ctx.scenario}`);
+  if (ctx.timesOccurred) lines.push(`**Quantas vezes aconteceu:** ${ctx.timesOccurred}`);
+  if (ctx.firstNoticedAt) lines.push(`**Primeira vez notado:** ${ctx.firstNoticedAt}`);
+  if (ctx.lastOccurredAt) lines.push(`**Última vez que aconteceu:** ${ctx.lastOccurredAt}`);
+  if (ctx.affectedPeopleDescription) lines.push(`**Quem foi afetado:** ${ctx.affectedPeopleDescription}`);
+  if (ctx.currentWorkaround) lines.push(`**Solução atual:** ${ctx.currentWorkaround}`);
+  if (ctx.emotionalImpact) lines.push(`**Impacto emocional:** ${ctx.emotionalImpact}`);
+  if (ctx.practicalImpact) lines.push(`**Impacto prático:** ${ctx.practicalImpact}`);
+  if (ctx.rootCauseGuess) lines.push(`**Hipótese de causa raiz:** ${ctx.rootCauseGuess}`);
+  if (ctx.evidence) lines.push(`**Evidências:** ${ctx.evidence}`);
+  if (ctx.similarSituations) lines.push(`**Situações semelhantes:** ${ctx.similarSituations}`);
+  if (ctx.questionsToAsk) lines.push(`**Perguntas pendentes:** ${ctx.questionsToAsk}`);
+  if (ctx.notes) lines.push(`**Notas:** ${ctx.notes}`);
+
+  return lines.join('\n');
+}
+
+export function exportAtritoToMarkdown(
+  atrito: Atrito,
+  investigationContext?: AtritoInvestigationContext
+): string {
   const lines = [
     `# Atrito: ${atrito.title}`,
     '',
@@ -21,12 +47,20 @@ export function exportAtritoToMarkdown(atrito: Atrito): string {
     lines.push('', '## Solução Improvisada', '', atrito.improvisedSolution);
   }
 
+  if (investigationContext) {
+    lines.push('', exportInvestigationContextToMarkdown(investigationContext));
+  }
+
   lines.push('', '---', '*Observação: este registro faz parte do projeto Atrito — uma ferramenta de observação deliberada de problemas cotidianos.*');
 
   return lines.join('\n');
 }
 
-export function exportOpportunityToMarkdown(opportunity: Opportunity): string {
+export function exportOpportunityToMarkdown(
+  opportunity: Opportunity,
+  atritos?: Atrito[],
+  investigationContexts?: AtritoInvestigationContext[]
+): string {
   const lines = [
     `# Oportunidade: ${opportunity.title}`,
     '',
@@ -60,7 +94,28 @@ export function exportOpportunityToMarkdown(opportunity: Opportunity): string {
     opportunity.validationQuestion || 'A definir',
   ];
 
-  if (opportunity.atritos.length > 0) {
+  if (opportunity.atritos.length > 0 && atritos && investigationContexts) {
+    const linkedAtritos = atritos.filter((a) => opportunity.atritos.includes(a.id));
+
+    if (linkedAtritos.length > 0) {
+      lines.push('', '---', '', '## Atritos Vinculados');
+
+      for (const atrito of linkedAtritos) {
+        lines.push('', `### ${atrito.title}`);
+        lines.push(`- **Descrição:** ${atrito.description}`);
+        lines.push(`- **Contexto:** ${atrito.context}`);
+        lines.push(`- **Intensidade:** ${atrito.intensity}`);
+        lines.push(`- **Frequência:** ${atrito.frequency}`);
+
+        const ctx = investigationContexts.find((c) => c.atritoId === atrito.id);
+        if (ctx) {
+          lines.push('', exportInvestigationContextToMarkdown(ctx));
+        }
+      }
+    }
+
+    lines.push('', `---`, `*Referência: atrito(s) #${opportunity.atritos.join(', #')}*`);
+  } else if (opportunity.atritos.length > 0) {
     lines.push('', `---`, `*Referência: atrito(s) #${opportunity.atritos.join(', #')}*`);
   }
 

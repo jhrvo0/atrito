@@ -23,7 +23,7 @@ const HYPOTHESIS_MAP: Record<Atrito['context'], string> = {
 
 const MVP_MAP: Record<Atrito['frequency'], string> = {
   'uma vez': 'Pesquise se outras pessoas já passaram por isso. Valide se o problema é recorrente antes de construir qualquer coisa.',
-  'às vezes': 'Crie um protótipo simples (纸笔 ou digital) para testar se uma solução resolve o problema quando ele aparece.',
+  'às vezes': 'Crie um protótipo simples (papel ou digital) para testar se uma solução resolve o problema quando ele aparece.',
   'frequentemente': 'Desenvolva um MVP funcional mínimo e teste com um grupo pequeno de usuários durante 2 semanas.',
 };
 

@@ -26,6 +26,30 @@ export type OpportunityStatus =
 
 export type Priority = 'baixa' | 'média' | 'alta';
 
+export type TimesOccurred =
+  | 'primeira vez'
+  | '2-3 vezes'
+  | 'várias vezes'
+  | 'toda semana'
+  | 'quase sempre';
+
+export type EmotionalImpact = 'nenhum' | 'leve' | 'moderado' | 'forte' | 'muito forte';
+
+export type PracticalImpact = 'nenhum' | 'leve' | 'moderado' | 'forte' | 'muito forte';
+
+export type ProblemClarity =
+  | 'muito vago'
+  | 'pouco claro'
+  | 'razoavelmente claro'
+  | 'claro'
+  | 'muito claro';
+
+export type InvestigationStatus =
+  | 'não iniciada'
+  | 'em andamento'
+  | 'concluída'
+  | 'arquivada';
+
 export interface Atrito {
   id: string;
   title: string;
@@ -37,6 +61,26 @@ export interface Atrito {
   improvisedSolution?: string;
   status: AtritoStatus;
   createdAt: string;
+}
+
+export interface AtritoInvestigationContext {
+  id: string;
+  atritoId: string;
+  scenario: string;
+  timesOccurred: TimesOccurred;
+  firstNoticedAt?: string;
+  lastOccurredAt?: string;
+  affectedPeopleDescription: string;
+  currentWorkaround: string;
+  emotionalImpact: EmotionalImpact;
+  practicalImpact: PracticalImpact;
+  rootCauseGuess: string;
+  evidence: string;
+  similarSituations: string;
+  questionsToAsk: string;
+  notes: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface Opportunity {
@@ -53,4 +97,18 @@ export interface Opportunity {
   status: OpportunityStatus;
   createdAt: string;
   atritos: string[];
+}
+
+export type PromptTemplateType =
+  | 'pain-deepening'
+  | 'solution-brainstorm'
+  | 'user-research'
+  | 'mvp-definition'
+  | 'technical-issue'
+  | 'opportunity-validation';
+
+export interface PromptTemplate {
+  type: PromptTemplateType;
+  label: string;
+  description: string;
 }

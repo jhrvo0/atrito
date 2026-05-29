@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy } from 'lucide-react';
+import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy, PenLine } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
@@ -8,10 +8,10 @@ import { Select } from '../components/Select';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
 import { useApp } from '../context/AppContext';
-import { Atrito, AtritoStatus } from '../types';
+import { Atrito, AtritoInvestigationContext, AtritoStatus } from '../types';
 import { generateOpportunityFromAtrito } from '../utils/opportunityGenerator';
 import { exportAtritoToMarkdown, downloadMarkdown, copyToClipboard } from '../utils/markdown';
-import { loadFilters, saveFilters, FiltersState } from '../utils/storage';
+import { loadFilters, saveFilters, FiltersState, loadInvestigationContexts } from '../utils/storage';
 import { formatDate } from '../utils/date';
 import {
   CONTEXT_OPTIONS,
@@ -21,6 +21,8 @@ import {
 } from '../constants';
 import { showConfirm } from '../components/ConfirmDialog';
 import { showToast } from '../components/Toast';
+import { InvestigationContextForm } from '../components/InvestigationContextForm';
+import { InvestigationSummary } from '../components/InvestigationSummary';
 
 interface AtritosProps {
   onNavigate: (page: string) => void;
@@ -38,6 +40,16 @@ export function Atritos({ onNavigate }: AtritosProps) {
   const { atritos, opportunities, deleteAtrito, updateAtrito, addOpportunity } = useApp();
   const [filters, setFilters] = useState<FiltersState>(() => loadFilters());
   const [selectedAtrito, setSelectedAtrito] = useState<Atrito | null>(null);
+  const [showInvestigationForm, setShowInvestigationForm] = useState(false);
+  const [investigationContexts, setInvestigationContexts] = useState<AtritoInvestigationContext[]>([]);
+
+  useEffect(() => {
+    setInvestigationContexts(loadInvestigationContexts());
+  }, [selectedAtrito]);
+
+  const getContextForAtrito = (atritoId: string) => {
+    return investigationContexts.find((c) => c.atritoId === atritoId);
+  };
 
   useEffect(() => {
     saveFilters(filters);
@@ -235,6 +247,9 @@ export function Atritos({ onNavigate }: AtritosProps) {
                     <span className={`text-xs px-2 py-1 rounded ${getStatusColor(atrito.status)}`}>
                       {atrito.status}
                     </span>
+                    {getContextForAtrito(atrito.id) && (
+                      <Tag variant="investigated">contexto</Tag>
+                    )}
                   </div>
                 </div>
                 <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-2">
@@ -330,6 +345,21 @@ export function Atritos({ onNavigate }: AtritosProps) {
               </div>
             </div>
 
+            {(() => {
+              const existingContext = getContextForAtrito(selectedAtrito.id);
+              if (existingContext) {
+                return (
+                  <div className="border-t border-border pt-4">
+                    <InvestigationSummary
+                      context={existingContext}
+                      onEdit={() => setShowInvestigationForm(true)}
+                    />
+                  </div>
+                );
+              }
+              return null;
+            })()}
+
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border gap-3">
               <div className="flex gap-2">
                 <Button variant="secondary" onClick={() => handleCopyAtrito(selectedAtrito)}>
@@ -340,18 +370,40 @@ export function Atritos({ onNavigate }: AtritosProps) {
                   <Download size={18} />
                   Exportar .md
                 </Button>
+                <Button variant="secondary" onClick={() => setShowInvestigationForm(true)}>
+                  <PenLine size={18} />
+                  Aprofundar atrito
+                </Button>
               </div>
-              <Button
-                onClick={() => handleTransformToOpportunity(selectedAtrito)}
-                disabled={selectedAtrito.status === 'virou ideia'}
-              >
-                <Lightbulb size={18} />
-                Transformar em oportunidade
-              </Button>
+              <div className="flex flex-col items-end gap-1.5">
+                {!getContextForAtrito(selectedAtrito.id) && selectedAtrito.status !== 'virou ideia' && (
+                  <p className="text-xs text-muted-foreground text-right max-w-[260px]">
+                    Você pode transformar agora, mas aprofundar o contexto antes tende a gerar prompts melhores.
+                  </p>
+                )}
+                <Button
+                  onClick={() => handleTransformToOpportunity(selectedAtrito)}
+                  disabled={selectedAtrito.status === 'virou ideia'}
+                >
+                  <Lightbulb size={18} />
+                  Transformar em oportunidade
+                </Button>
+              </div>
             </div>
           </div>
         )}
       </Modal>
+
+      {selectedAtrito && (
+        <InvestigationContextForm
+          isOpen={showInvestigationForm}
+          onClose={() => setShowInvestigationForm(false)}
+          atrito={selectedAtrito}
+          onSaved={() => {
+            setInvestigationContexts(loadInvestigationContexts());
+          }}
+        />
+      )}
     </div>
   );
 }

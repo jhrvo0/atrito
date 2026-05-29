@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Lightbulb, Eye, Trash2, FileCode, Download, Copy, FileDown, Search, X } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Tag } from '../components/Tag';
@@ -8,8 +8,9 @@ import { Input } from '../components/Input';
 import { Select } from '../components/Select';
 import { EmptyState } from '../components/EmptyState';
 import { useApp } from '../context/AppContext';
-import { Opportunity, Priority } from '../types';
-import { generatePrompt } from '../utils/promptGenerator';
+import { Opportunity, Priority, PromptTemplateType } from '../types';
+import { generatePromptFromContext } from '../utils/promptGenerator';
+import { PROMPT_TEMPLATES } from '../utils/promptTemplates';
 import {
   exportOpportunityToMarkdown,
   exportAllOpportunitiesToMarkdown,
@@ -36,10 +37,11 @@ const defaultFilters: OpportunityFiltersState = {
 };
 
 export function Oportunidades({ onNavigate }: OportunidadesProps) {
-  const { opportunities, deleteOpportunity, updateOpportunity } = useApp();
+  const { opportunities, atritos, investigationContexts, deleteOpportunity, updateOpportunity } = useApp();
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
   const [filters, setFilters] = useState<OpportunityFiltersState>(() => loadOpportunityFilters());
   const [promptModalOpportunity, setPromptModalOpportunity] = useState<Opportunity | null>(null);
+  const [selectedTemplateType, setSelectedTemplateType] = useState<PromptTemplateType>('mvp-definition');
 
   useEffect(() => {
     saveOpportunityFilters(filters);
@@ -95,19 +97,45 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
 
   const handleShowPrompt = (opportunity: Opportunity) => {
     setPromptModalOpportunity(opportunity);
+    setSelectedTemplateType('mvp-definition');
   };
 
+  const generatedPrompt = useMemo(() => {
+    if (!promptModalOpportunity) return '';
+
+    const linkedAtrito = promptModalOpportunity.atritos.length > 0
+      ? atritos.find((a) => promptModalOpportunity.atritos.includes(a.id))
+      : undefined;
+
+    const investigationCtx = linkedAtrito
+      ? investigationContexts.find((c) => c.atritoId === linkedAtrito.id)
+      : undefined;
+
+    return generatePromptFromContext({
+      opportunity: promptModalOpportunity,
+      atrito: linkedAtrito,
+      investigationContext: investigationCtx,
+      templateType: selectedTemplateType,
+    });
+  }, [promptModalOpportunity, selectedTemplateType, atritos, investigationContexts]);
+
   const handleCopyPrompt = async () => {
-    if (!promptModalOpportunity) return;
-    const prompt = generatePrompt(promptModalOpportunity);
-    const success = await copyToClipboard(prompt);
+    if (!generatedPrompt) return;
+    const success = await copyToClipboard(generatedPrompt);
     if (success) {
       showToast('Prompt copiado para a área de transferência!');
     }
   };
 
+  const handleExportPrompt = () => {
+    if (!promptModalOpportunity || !generatedPrompt) return;
+    const filename = `prompt-${selectedTemplateType}-${promptModalOpportunity.id}.md`;
+    downloadMarkdown(generatedPrompt, filename);
+    showToast('Prompt exportado como Markdown!');
+  };
+
   const handleExportOpportunity = (opportunity: Opportunity) => {
-    const markdown = exportOpportunityToMarkdown(opportunity);
+    const markdown = exportOpportunityToMarkdown(opportunity, atritos, investigationContexts);
     downloadMarkdown(markdown, `oportunidade-${opportunity.id}.md`);
     showToast('Arquivo Markdown baixado!');
   };
@@ -119,7 +147,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
   };
 
   const handleCopyOpportunity = async (opportunity: Opportunity) => {
-    const markdown = exportOpportunityToMarkdown(opportunity);
+    const markdown = exportOpportunityToMarkdown(opportunity, atritos, investigationContexts);
     const success = await copyToClipboard(markdown);
     if (success) {
       showToast('Oportunidade copiada para a área de transferência!');
@@ -396,21 +424,42 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
       <Modal
         isOpen={!!promptModalOpportunity}
         onClose={() => setPromptModalOpportunity(null)}
-        title="Prompt para IA"
+        title="Gerar Prompt para IA"
       >
         {promptModalOpportunity && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              Copie o prompt abaixo e cole no seu assistente de IA preferido para refinar a oportunidade.
+              Escolha o tipo de análise e copie o prompt gerado para o seu assistente de IA.
             </p>
+
+            <div>
+              <label className="text-sm font-medium mb-2 block">Tipo de prompt</label>
+              <Select
+                value={selectedTemplateType}
+                onChange={(e) => setSelectedTemplateType(e.target.value as PromptTemplateType)}
+                options={PROMPT_TEMPLATES.map((t) => ({
+                  value: t.type,
+                  label: t.label,
+                }))}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                {PROMPT_TEMPLATES.find((t) => t.type === selectedTemplateType)?.description}
+              </p>
+            </div>
+
             <div className="bg-muted rounded-lg p-4 max-h-[50vh] overflow-y-auto">
               <pre className="text-xs whitespace-pre-wrap font-mono text-foreground">
-                {generatePrompt(promptModalOpportunity)}
+                {generatedPrompt}
               </pre>
             </div>
+
             <div className="flex justify-end gap-3">
               <Button variant="secondary" onClick={() => setPromptModalOpportunity(null)}>
                 Fechar
+              </Button>
+              <Button variant="secondary" onClick={handleExportPrompt}>
+                <Download size={18} />
+                Exportar .md
               </Button>
               <Button onClick={handleCopyPrompt}>
                 <Copy size={18} />

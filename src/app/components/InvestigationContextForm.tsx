@@ -4,6 +4,7 @@ import { Modal } from './Modal';
 import { Button } from './Button';
 import { Textarea } from './Textarea';
 import { Select } from './Select';
+import { Input } from './Input';
 import { Atrito, AtritoInvestigationContext } from '../types';
 import {
   TIMES_OCCURRED_OPTIONS,
@@ -25,6 +26,8 @@ interface InvestigationContextFormProps {
 interface FormData {
   scenario: string;
   timesOccurred: string;
+  firstNoticedAt: string;
+  lastOccurredAt: string;
   affectedPeopleDescription: string;
   currentWorkaround: string;
   emotionalImpact: string;
@@ -39,6 +42,8 @@ interface FormData {
 const initialFormData: FormData = {
   scenario: '',
   timesOccurred: '',
+  firstNoticedAt: '',
+  lastOccurredAt: '',
   affectedPeopleDescription: '',
   currentWorkaround: '',
   emotionalImpact: '',
@@ -56,6 +61,8 @@ function loadFormData(existing?: AtritoInvestigationContext): FormData {
   return {
     scenario: existing.scenario || '',
     timesOccurred: existing.timesOccurred || '',
+    firstNoticedAt: existing.firstNoticedAt || '',
+    lastOccurredAt: existing.lastOccurredAt || '',
     affectedPeopleDescription: existing.affectedPeopleDescription || '',
     currentWorkaround: existing.currentWorkaround || '',
     emotionalImpact: existing.emotionalImpact || '',
@@ -89,6 +96,8 @@ export function InvestigationContextForm({
       atritoId: atrito.id,
       scenario: formData.scenario,
       timesOccurred: isValidTimesOccurred(formData.timesOccurred) ? formData.timesOccurred : 'primeira vez',
+      firstNoticedAt: formData.firstNoticedAt || undefined,
+      lastOccurredAt: formData.lastOccurredAt || undefined,
       affectedPeopleDescription: formData.affectedPeopleDescription,
       currentWorkaround: formData.currentWorkaround,
       emotionalImpact: isValidEmotionalImpact(formData.emotionalImpact) ? formData.emotionalImpact : 'nenhum',
@@ -136,6 +145,29 @@ export function InvestigationContextForm({
               options={[{ value: '', label: 'Selecione...' }, ...TIMES_OCCURRED_OPTIONS]}
               placeholder="Frequência"
             />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-1.5">
+                Quando você percebeu isso pela primeira vez?
+              </label>
+              <Input
+                type="date"
+                value={formData.firstNoticedAt}
+                onChange={(e) => handleChange('firstNoticedAt', e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1.5">
+                Quando isso aconteceu pela última vez?
+              </label>
+              <Input
+                type="date"
+                value={formData.lastOccurredAt}
+                onChange={(e) => handleChange('lastOccurredAt', e.target.value)}
+              />
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

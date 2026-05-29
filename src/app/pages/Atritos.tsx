@@ -84,7 +84,8 @@ export function Atritos({ onNavigate }: AtritosProps) {
       return;
     }
 
-    const newOpportunity = generateOpportunityFromAtrito(atrito);
+    const context = getContextForAtrito(atrito.id);
+    const newOpportunity = generateOpportunityFromAtrito(atrito, context);
     addOpportunity(newOpportunity);
     updateAtrito(atrito.id, { status: 'virou ideia' });
     setSelectedAtrito(null);

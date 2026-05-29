@@ -1,4 +1,21 @@
-import { Atrito, Opportunity, Priority } from '../types';
+import { Atrito, AtritoInvestigationContext, Opportunity, Priority } from '../types';
+
+function calculatePriorityFromContext(
+  practicalImpact: string,
+  emotionalImpact: string,
+  timesOccurred: string
+): Priority {
+  const strongPractical = practicalImpact === 'forte' || practicalImpact === 'muito forte';
+  const strongEmotional = emotionalImpact === 'forte' || emotionalImpact === 'muito forte';
+  const moderateOrAbove =
+    practicalImpact === 'moderado' || practicalImpact === 'forte' || practicalImpact === 'muito forte';
+  const frequent = timesOccurred === 'quase sempre' || timesOccurred === 'toda semana';
+
+  if (strongPractical && strongEmotional) return 'alta';
+  if (frequent && moderateOrAbove) return 'alta';
+  if (timesOccurred === 'primeira vez' && (practicalImpact === 'leve' || practicalImpact === 'nenhum')) return 'baixa';
+  return 'média';
+}
 
 function calculatePriority(intensity: Atrito['intensity'], frequency: Atrito['frequency']): Priority {
   if (intensity === 'alta' && frequency === 'frequentemente') return 'alta';
@@ -27,23 +44,77 @@ const MVP_MAP: Record<Atrito['frequency'], string> = {
   'frequentemente': 'Desenvolva um MVP funcional mínimo e teste com um grupo pequeno de usuários durante 2 semanas.',
 };
 
-export function generateOpportunityFromAtrito(atrito: Atrito): Opportunity {
+export function generateOpportunityFromAtrito(
+  atrito: Atrito,
+  investigationContext?: AtritoInvestigationContext
+): Opportunity {
   const affectedLabel =
     atrito.affected === 'eu'
       ? 'pessoas que enfrentam o mesmo problema'
       : `${atrito.affected}`;
 
+  const hasCtx = !!investigationContext;
+
+  const hypothesis = hasCtx && investigationContext.rootCauseGuess
+    ? `A causa raiz parece ser: ${investigationContext.rootCauseGuess}. Uma solução direcionada poderia eliminar a fricção no contexto "${investigationContext.scenario || atrito.context}".`
+    : HYPOTHESIS_MAP[atrito.context] || 'Uma solução pensada poderia resolver esse problema de forma simples e eficiente.';
+
+  const whyItMatters = hasCtx
+    ? (() => {
+        const parts: string[] = [];
+        if (investigationContext.scenario) {
+          parts.push(`No cenário "${investigationContext.scenario}"`);
+        } else {
+          parts.push(`No contexto de ${atrito.context}`);
+        }
+        if (investigationContext.timesOccurred) {
+          parts.push(`isso já aconteceu ${investigationContext.timesOccurred}`);
+        }
+        if (investigationContext.practicalImpact && investigationContext.practicalImpact !== 'nenhum') {
+          parts.push(`com impacto prático ${investigationContext.practicalImpact}`);
+        }
+        if (investigationContext.emotionalImpact && investigationContext.emotionalImpact !== 'nenhum') {
+          parts.push(`e impacto emocional ${investigationContext.emotionalImpact}`);
+        }
+        if (parts.length > 0) {
+          parts[0] = parts[0].charAt(0).toLowerCase() + parts[0].slice(0);
+          return parts.join(', ') + '. Resolver isso poderia melhorar significativamente a experiência.';
+        }
+        return `Esse problema acontece ${atrito.frequency} no contexto de ${atrito.context}, afetando ${atrito.affected}. Quando algo frustra várias pessoas com frequência, vale investigar se existe uma solução viável.`;
+      })()
+    : `Esse problema acontece ${atrito.frequency} no contexto de ${atrito.context}, afetando ${atrito.affected}. Quando algo frustra várias pessoas com frequência, vale investigar se existe uma solução viável.`;
+
+  const suggestedMVP = hasCtx && investigationContext.currentWorkaround
+    ? `Você já improvisou: "${investigationContext.currentWorkaround}". Transforme isso em um protótipo testável. Valide com pessoas que enfrentam o mesmo problema.`
+    : MVP_MAP[atrito.frequency] || 'Valide a demanda com uma pesquisa simples antes de construir.';
+
+  const whatNotToBuild = hasCtx
+    ? 'Não construa um produto completo no início. Evite backend complexo, integrações, gamificação ou qualquer coisa que não seja essencial para validar a hipótese. Foque no que pode ser testado com o menor esforço possível.'
+    : 'Não construa um produto completo no início. Evite backend complexo, integrações, gamificação ou qualquer coisa que não seja essencial para validar a hipótese.';
+
+  const validationQuestion = hasCtx && investigationContext.evidence
+    ? `Você já tem evidência de que o problema é real: "${investigationContext.evidence}". A próxima pergunta é: quantas pessoas se identificariam com isso e estariam dispostas a usar uma solução?`
+    : `Se existisse uma solução simples para isso, quantas pessoas usariam? Como descobrir isso sem construir nada?`;
+
+  const priority = hasCtx && investigationContext.practicalImpact && investigationContext.emotionalImpact && investigationContext.timesOccurred
+    ? calculatePriorityFromContext(
+        investigationContext.practicalImpact,
+        investigationContext.emotionalImpact,
+        investigationContext.timesOccurred
+      )
+    : calculatePriority(atrito.intensity, atrito.frequency);
+
   return {
     id: Date.now().toString(),
     title: atrito.title,
     originalProblem: atrito.description,
-    hypothesis: HYPOTHESIS_MAP[atrito.context] || 'Uma solução pensada poderia resolver esse problema de forma simples e eficiente.',
+    hypothesis,
     targetAudience: affectedLabel,
-    whyItMatters: `Esse problema acontece ${atrito.frequency} no contexto de ${atrito.context}, afetando ${atrito.affected}. Quando algo frustra várias pessoas com frequência, vale investigar se existe uma solução viável.`,
-    suggestedMVP: MVP_MAP[atrito.frequency] || 'Valide a demanda com uma pesquisa simples antes de construir.',
-    whatNotToBuild: 'Não construa um produto completo no início. Evite backend complexo, integrações, gamificação ou qualquer coisa que não seja essencial para validar a hipótese.',
-    validationQuestion: `Se existisse uma solução simples para isso, quantas pessoas usariam? Como descobrir isso sem construir nada?`,
-    priority: calculatePriority(atrito.intensity, atrito.frequency),
+    whyItMatters,
+    suggestedMVP,
+    whatNotToBuild,
+    validationQuestion,
+    priority,
     status: 'ideia',
     createdAt: new Date().toISOString(),
     atritos: [atrito.id],

@@ -1,5 +1,6 @@
 import { AtritoInvestigationContext } from '../types';
 import { Tag } from './Tag';
+import { formatDate } from '../utils/date';
 import {
   TIMES_OCCURRED_OPTIONS,
   EMOTIONAL_IMPACT_OPTIONS,
@@ -30,6 +31,14 @@ export function InvestigationSummary({
     {
       label: 'Quantidade de vezes',
       value: getLabel(TIMES_OCCURRED_OPTIONS, context.timesOccurred),
+    },
+    {
+      label: 'Primeira vez percebido',
+      value: context.firstNoticedAt ? formatDate(context.firstNoticedAt) : '',
+    },
+    {
+      label: 'Última ocorrência',
+      value: context.lastOccurredAt ? formatDate(context.lastOccurredAt) : '',
     },
     {
       label: 'Impacto prático',

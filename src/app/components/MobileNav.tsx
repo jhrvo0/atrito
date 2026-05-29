@@ -1,25 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 import { Menu, X, Home, FileText, Lightbulb, TrendingUp } from 'lucide-react';
 
-interface MobileNavProps {
-  currentPage: string;
-  onNavigate: (page: string) => void;
-}
+const navItems = [
+  { to: '/', label: 'Início', icon: Home },
+  { to: '/atritos', label: 'Atritos', icon: FileText },
+  { to: '/oportunidades', label: 'Oportunidades', icon: Lightbulb },
+  { to: '/padroes', label: 'Padrões', icon: TrendingUp },
+];
 
-export function MobileNav({ currentPage, onNavigate }: MobileNavProps) {
+export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
-
-  const navItems = [
-    { id: 'inicio', label: 'Início', icon: Home },
-    { id: 'atritos', label: 'Atritos', icon: FileText },
-    { id: 'oportunidades', label: 'Oportunidades', icon: Lightbulb },
-    { id: 'padroes', label: 'Padrões', icon: TrendingUp }
-  ];
-
-  const handleNavigate = (page: string) => {
-    onNavigate(page);
-    setIsOpen(false);
-  };
 
   return (
     <>
@@ -50,20 +41,23 @@ export function MobileNav({ currentPage, onNavigate }: MobileNavProps) {
         <nav className="p-4 space-y-1">
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = currentPage === item.id;
             return (
-              <button
-                key={item.id}
-                onClick={() => handleNavigate(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-150 text-left ${
-                  isActive
-                    ? 'bg-sidebar-accent text-sidebar-accent-foreground'
-                    : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
-                }`}
+              <NavLink
+                key={item.to}
+                to={item.to}
+                end={item.to === '/'}
+                onClick={() => setIsOpen(false)}
+                className={({ isActive }) =>
+                  `w-full flex items-center gap-3 px-4 py-3 rounded-md transition-all duration-150 text-left ${
+                    isActive
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent/50'
+                  }`
+                }
               >
                 <Icon size={20} />
                 <span>{item.label}</span>
-              </button>
+              </NavLink>
             );
           })}
         </nav>

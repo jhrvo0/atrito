@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -21,11 +22,8 @@ import { toISOStringNow } from '../utils/date';
 import { showConfirm } from '../components/ConfirmDialog';
 import { showToast } from '../components/Toast';
 
-interface NovoAtritoProps {
-  onNavigate: (page: string) => void;
-}
-
-export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
+export function NovoAtrito() {
+  const navigate = useNavigate();
   const { addAtrito } = useApp();
   const [errors, setErrors] = useState<string[]>([]);
   const [formData, setFormData] = useState({
@@ -57,7 +55,7 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
     setErrors([]);
 
     const newAtrito: Atrito = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       title: formData.title.trim(),
       description: formData.description.trim(),
       context: isValidContext(formData.context) ? formData.context : 'outro',
@@ -71,7 +69,7 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
 
     addAtrito(newAtrito);
     showToast('Atrito registrado com sucesso!');
-    onNavigate('atritos');
+    navigate('/atritos');
   };
 
   const handleCancel = async () => {
@@ -91,16 +89,16 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
         confirmLabel: 'Sair',
         cancelLabel: 'Continuar editando',
       });
-      if (confirmed) onNavigate('atritos');
+      if (confirmed) navigate('/atritos');
     } else {
-      onNavigate('atritos');
+      navigate('/atritos');
     }
   };
 
   return (
     <div className="max-w-3xl mx-auto">
       <button
-        onClick={() => onNavigate('atritos')}
+        onClick={() => navigate('/atritos')}
         className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors mb-6"
       >
         <ArrowLeft size={20} />

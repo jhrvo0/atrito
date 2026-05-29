@@ -1,14 +1,12 @@
+import { useNavigate } from 'react-router-dom';
 import { Plus, FileText, Lightbulb, MapPin, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { DataManagement } from '../components/DataManagement';
 import { useApp } from '../context/AppContext';
-import { formatDate } from '../utils/date';
 
-interface InicioProps {
-  onNavigate: (page: string) => void;
-}
-
-export function Inicio({ onNavigate }: InicioProps) {
+export function Inicio() {
+  const navigate = useNavigate();
   const { atritos, opportunities } = useApp();
 
   const highIntensityCount = atritos.filter((a) => a.intensity === 'alta').length;
@@ -74,7 +72,7 @@ export function Inicio({ onNavigate }: InicioProps) {
           Registre os pequenos problemas, fricções e incômodos do seu dia a dia. Transforme essas observações
           em oportunidades de produto, melhorias de experiência e ideias de pesquisa.
         </p>
-        <Button onClick={() => onNavigate('novo-atrito')} size="lg" className="w-full md:w-auto">
+        <Button onClick={() => navigate('/atritos/novo')} size="lg" className="w-full md:w-auto">
           <Plus size={20} />
           Registrar atrito
         </Button>
@@ -102,7 +100,7 @@ export function Inicio({ onNavigate }: InicioProps) {
         {atritos.length === 0 ? (
           <Card className="p-8 text-center">
             <p className="text-muted-foreground mb-4">Nenhum atrito registrado ainda.</p>
-            <Button onClick={() => onNavigate('novo-atrito')}>
+            <Button onClick={() => navigate('/atritos/novo')}>
               <Plus size={20} />
               Registrar primeiro atrito
             </Button>
@@ -110,7 +108,7 @@ export function Inicio({ onNavigate }: InicioProps) {
         ) : (
           <div className="space-y-3">
             {atritos.slice(0, 5).map((atrito) => (
-              <Card key={atrito.id} onClick={() => onNavigate('atritos')} className="p-4 md:p-5">
+              <Card key={atrito.id} onClick={() => navigate('/atritos')} className="p-4 md:p-5">
                 <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium mb-1 text-sm md:text-base">{atrito.title}</h3>
@@ -138,6 +136,14 @@ export function Inicio({ onNavigate }: InicioProps) {
             ))}
           </div>
         )}
+      </div>
+
+      <div className="mt-12 border-t border-border pt-8">
+        <h2 className="text-xl mb-4">Dados</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Exporte um backup dos seus dados ou importe um backup anterior.
+        </p>
+        <DataManagement onDataChanged={() => window.location.reload()} />
       </div>
     </div>
   );

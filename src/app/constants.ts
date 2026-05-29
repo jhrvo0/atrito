@@ -9,8 +9,6 @@ import {
   TimesOccurred,
   EmotionalImpact,
   PracticalImpact,
-  ProblemClarity,
-  InvestigationStatus,
 } from './types';
 
 export const CONTEXT_OPTIONS: { value: Context; label: string }[] = [
@@ -117,21 +115,6 @@ export const PRACTICAL_IMPACT_OPTIONS: { value: PracticalImpact; label: string }
   { value: 'muito forte', label: 'Muito forte' },
 ];
 
-export const PROBLEM_CLARITY_OPTIONS: { value: ProblemClarity; label: string }[] = [
-  { value: 'muito vago', label: 'Muito vago' },
-  { value: 'pouco claro', label: 'Pouco claro' },
-  { value: 'razoavelmente claro', label: 'Razoavelmente claro' },
-  { value: 'claro', label: 'Claro' },
-  { value: 'muito claro', label: 'Muito claro' },
-];
-
-export const INVESTIGATION_STATUS_OPTIONS: { value: InvestigationStatus; label: string }[] = [
-  { value: 'não iniciada', label: 'Não iniciada' },
-  { value: 'em andamento', label: 'Em andamento' },
-  { value: 'concluída', label: 'Concluída' },
-  { value: 'arquivada', label: 'Arquivada' },
-];
-
 export function isValidTimesOccurred(value: string): value is TimesOccurred {
   return TIMES_OCCURRED_OPTIONS.some((o) => o.value === value);
 }
@@ -144,10 +127,4 @@ export function isValidPracticalImpact(value: string): value is PracticalImpact 
   return PRACTICAL_IMPACT_OPTIONS.some((o) => o.value === value);
 }
 
-export function isValidProblemClarity(value: string): value is ProblemClarity {
-  return PROBLEM_CLARITY_OPTIONS.some((o) => o.value === value);
-}
 
-export function isValidInvestigationStatus(value: string): value is InvestigationStatus {
-  return INVESTIGATION_STATUS_OPTIONS.some((o) => o.value === value);
-}

@@ -1,5 +1,5 @@
 import { Atrito, Opportunity, AtritoInvestigationContext } from '../types';
-import { formatDate } from './date';
+import { formatDate, formatLocalDate } from './date';
 
 export function exportInvestigationContextToMarkdown(ctx: AtritoInvestigationContext): string {
   const lines = [
@@ -9,8 +9,8 @@ export function exportInvestigationContextToMarkdown(ctx: AtritoInvestigationCon
 
   if (ctx.scenario) lines.push(`**Cenário:** ${ctx.scenario}`);
   if (ctx.timesOccurred) lines.push(`**Quantas vezes aconteceu:** ${ctx.timesOccurred}`);
-  if (ctx.firstNoticedAt) lines.push(`**Primeira vez notado:** ${formatDate(ctx.firstNoticedAt)}`);
-  if (ctx.lastOccurredAt) lines.push(`**Última vez que aconteceu:** ${formatDate(ctx.lastOccurredAt)}`);
+  if (ctx.firstNoticedAt) lines.push(`**Primeira vez notado:** ${formatLocalDate(ctx.firstNoticedAt)}`);
+  if (ctx.lastOccurredAt) lines.push(`**Última vez que aconteceu:** ${formatLocalDate(ctx.lastOccurredAt)}`);
   if (ctx.affectedPeopleDescription) lines.push(`**Quem foi afetado:** ${ctx.affectedPeopleDescription}`);
   if (ctx.currentWorkaround) lines.push(`**Solução atual:** ${ctx.currentWorkaround}`);
   if (ctx.emotionalImpact) lines.push(`**Impacto emocional:** ${ctx.emotionalImpact}`);

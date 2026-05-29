@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Lightbulb, Eye, Trash2, FileCode, Download, Copy, FileDown, Search, X } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Tag } from '../components/Tag';
@@ -27,17 +28,14 @@ import { loadOpportunityFilters, saveOpportunityFilters, OpportunityFiltersState
 import { showConfirm } from '../components/ConfirmDialog';
 import { showToast } from '../components/Toast';
 
-interface OportunidadesProps {
-  onNavigate: (page: string) => void;
-}
-
 const defaultFilters: OpportunityFiltersState = {
   searchTerm: '',
   statusFilter: '',
   priorityFilter: '',
 };
 
-export function Oportunidades({ onNavigate }: OportunidadesProps) {
+export function Oportunidades() {
+  const navigate = useNavigate();
   const { opportunities, atritos, investigationContexts, deleteOpportunity, updateOpportunity } = useApp();
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
   const [filters, setFilters] = useState<OpportunityFiltersState>(() => loadOpportunityFilters());
@@ -241,7 +239,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
                 Limpar filtros
               </Button>
             ) : (
-              <Button onClick={() => onNavigate('atritos')}>Ver atritos</Button>
+              <Button onClick={() => navigate('/atritos')}>Ver atritos</Button>
             )
           }
         />

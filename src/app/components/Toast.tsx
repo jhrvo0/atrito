@@ -11,7 +11,7 @@ let toastListener: ((toasts: Toast[]) => void) | null = null;
 let toastsState: Toast[] = [];
 
 export function showToast(message: string, type: Toast['type'] = 'success') {
-  const id = Date.now().toString();
+  const id = crypto.randomUUID();
   const toast: Toast = { id, message, type };
   toastsState = [...toastsState, toast];
   toastListener?.(toastsState);

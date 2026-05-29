@@ -37,19 +37,6 @@ export type EmotionalImpact = 'nenhum' | 'leve' | 'moderado' | 'forte' | 'muito 
 
 export type PracticalImpact = 'nenhum' | 'leve' | 'moderado' | 'forte' | 'muito forte';
 
-export type ProblemClarity =
-  | 'muito vago'
-  | 'pouco claro'
-  | 'razoavelmente claro'
-  | 'claro'
-  | 'muito claro';
-
-export type InvestigationStatus =
-  | 'não iniciada'
-  | 'em andamento'
-  | 'concluída'
-  | 'arquivada';
-
 export interface Atrito {
   id: string;
   title: string;

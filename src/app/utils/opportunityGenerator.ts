@@ -105,7 +105,7 @@ export function generateOpportunityFromAtrito(
     : calculatePriority(atrito.intensity, atrito.frequency);
 
   return {
-    id: Date.now().toString(),
+    id: crypto.randomUUID(),
     title: atrito.title,
     originalProblem: atrito.description,
     hypothesis,

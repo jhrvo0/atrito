@@ -138,3 +138,68 @@ export function hasInvestigationContext(
   const list = contexts ?? loadInvestigationContexts();
   return list.some((c) => c.atritoId === atritoId);
 }
+
+interface BackupData {
+  version: number;
+  exportedAt: string;
+  atritos: Atrito[];
+  opportunities: Opportunity[];
+  investigationContexts: AtritoInvestigationContext[];
+}
+
+export function exportBackup(): BackupData {
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    atritos: loadAtritos(),
+    opportunities: loadOpportunities(),
+    investigationContexts: loadInvestigationContexts(),
+  };
+}
+
+export function downloadBackup(): void {
+  const data = exportBackup();
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `atrito-backup-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+export function importBackup(jsonString: string): { success: boolean; message: string } {
+  try {
+    const data = JSON.parse(jsonString) as Partial<BackupData>;
+
+    if (!data.version || !Array.isArray(data.atritos) || !Array.isArray(data.opportunities)) {
+      return { success: false, message: 'Formato de backup inválido.' };
+    }
+
+    if (data.investigationContexts && !Array.isArray(data.investigationContexts)) {
+      return { success: false, message: 'Formato de backup inválido.' };
+    }
+
+    saveAtritos(data.atritos);
+    saveOpportunities(data.opportunities);
+    saveInvestigationContexts(data.investigationContexts || []);
+
+    return {
+      success: true,
+      message: `Backup importado: ${data.atritos.length} atritos, ${data.opportunities.length} oportunidades.`,
+    };
+  } catch {
+    return { success: false, message: 'Não foi possível ler o arquivo JSON.' };
+  }
+}
+
+export function clearAllData(): void {
+  localStorage.removeItem(ATRITOS_KEY);
+  localStorage.removeItem(OPPORTUNITIES_KEY);
+  localStorage.removeItem(FILTERS_KEY);
+  localStorage.removeItem(OPPORTUNITY_FILTERS_KEY);
+  localStorage.removeItem(INVESTIGATION_CONTEXTS_KEY);
+}

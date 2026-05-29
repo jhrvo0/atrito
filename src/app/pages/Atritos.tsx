@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy, PenLine } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -24,10 +25,6 @@ import { showToast } from '../components/Toast';
 import { InvestigationContextForm } from '../components/InvestigationContextForm';
 import { InvestigationSummary } from '../components/InvestigationSummary';
 
-interface AtritosProps {
-  onNavigate: (page: string) => void;
-}
-
 const defaultFilters: FiltersState = {
   searchTerm: '',
   contextFilter: '',
@@ -36,8 +33,9 @@ const defaultFilters: FiltersState = {
   statusFilter: '',
 };
 
-export function Atritos({ onNavigate }: AtritosProps) {
-  const { atritos, opportunities, investigationContexts, deleteAtrito, updateAtrito, addOpportunity, addInvestigationContext } = useApp();
+export function Atritos() {
+  const navigate = useNavigate();
+  const { atritos, opportunities, investigationContexts, deleteAtrito, deleteOpportunity, updateAtrito, addOpportunity, addInvestigationContext } = useApp();
   const [filters, setFilters] = useState<FiltersState>(() => loadFilters());
   const [selectedAtrito, setSelectedAtrito] = useState<Atrito | null>(null);
   const [showInvestigationForm, setShowInvestigationForm] = useState(false);
@@ -80,7 +78,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
     const existingOpportunity = opportunities.find((opp) => opp.atritos.includes(atrito.id));
     if (existingOpportunity) {
       showToast('Este atrito já foi transformado em oportunidade.', 'info');
-      onNavigate('oportunidades');
+      navigate('/oportunidades');
       return;
     }
 
@@ -90,7 +88,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
     updateAtrito(atrito.id, { status: 'virou ideia' });
     setSelectedAtrito(null);
     showToast('Oportunidade criada com sucesso!');
-    onNavigate('oportunidades');
+    navigate('/oportunidades');
   };
 
   const handleChangeStatus = (atrito: Atrito, newStatus: AtritoStatus) => {
@@ -117,16 +115,32 @@ export function Atritos({ onNavigate }: AtritosProps) {
   };
 
   const handleDeleteAtrito = async (atrito: Atrito) => {
-    const confirmed = await showConfirm({
-      title: 'Excluir atrito',
-      message: `Tem certeza que deseja excluir "${atrito.title}"? Esta ação não pode ser desfeita.`,
-      confirmLabel: 'Excluir',
-    });
-    if (confirmed) {
-      deleteAtrito(atrito.id);
-      setSelectedAtrito(null);
-      showToast('Atrito excluído.');
+    const linkedOpportunities = opportunities.filter((o) => o.atritos.includes(atrito.id));
+
+    if (linkedOpportunities.length > 0) {
+      const confirmed = await showConfirm({
+        title: 'Excluir atrito',
+        message: `Este atrito está vinculado a ${linkedOpportunities.length} oportunidade(s). O que deseja fazer?`,
+        confirmLabel: 'Excluir atrito e oportunidades',
+        cancelLabel: 'Cancelar',
+      });
+      if (!confirmed) return;
+
+      for (const opp of linkedOpportunities) {
+        deleteOpportunity(opp.id);
+      }
+    } else {
+      const confirmed = await showConfirm({
+        title: 'Excluir atrito',
+        message: `Tem certeza que deseja excluir "${atrito.title}"? Esta ação não pode ser desfeita.`,
+        confirmLabel: 'Excluir',
+      });
+      if (!confirmed) return;
     }
+
+    deleteAtrito(atrito.id);
+    setSelectedAtrito(null);
+    showToast('Atrito excluído.');
   };
 
   const getStatusColor = (status: string) => {
@@ -151,7 +165,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
           <h1 className="text-2xl md:text-3xl mb-1 md:mb-2">Atritos</h1>
           <p className="text-sm md:text-base text-muted-foreground">Registros de problemas e fricções observados</p>
         </div>
-        <Button onClick={() => onNavigate('novo-atrito')} className="w-full sm:w-auto">
+        <Button onClick={() => navigate('/atritos/novo')} className="w-full sm:w-auto">
           <Plus size={20} />
           Novo atrito
         </Button>
@@ -223,7 +237,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
                 Limpar filtros
               </Button>
             ) : (
-              <Button onClick={() => onNavigate('novo-atrito')}>
+              <Button onClick={() => navigate('/atritos/novo')}>
                 <Plus size={20} />
                 Registrar primeiro atrito
               </Button>

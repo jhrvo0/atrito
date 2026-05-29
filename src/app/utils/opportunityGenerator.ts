@@ -77,7 +77,7 @@ export function generateOpportunityFromAtrito(
           parts.push(`e impacto emocional ${investigationContext.emotionalImpact}`);
         }
         if (parts.length > 0) {
-          parts[0] = parts[0].charAt(0).toLowerCase() + parts[0].slice(0);
+          parts[0] = parts[0].charAt(0).toLowerCase() + parts[0].slice(1);
           return parts.join(', ') + '. Resolver isso poderia melhorar significativamente a experiência.';
         }
         return `Esse problema acontece ${atrito.frequency} no contexto de ${atrito.context}, afetando ${atrito.affected}. Quando algo frustra várias pessoas com frequência, vale investigar se existe uma solução viável.`;

@@ -2,10 +2,31 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Atrito — Pequenos incômodos revelam bons produtos</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, maximum-scale=1.0, user-scalable=no" />
+    <meta name="theme-color" content="#FAF9F7" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0C0A09" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="description" content="Registre problemas e fricções do dia a dia. Transforme observações em oportunidades de produto, melhorias de experiência e ideias de pesquisa." />
-    <style>html, body { height: 100%; margin: 0; } #root { height: 100%; }</style>
+    <title>Atrito — Pequenos incômodos revelam bons produtos</title>
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        -webkit-tap-highlight-color: transparent;
+        -webkit-touch-callout: none;
+        overscroll-behavior: none;
+      }
+      #root {
+        height: 100%;
+      }
+      @supports (padding: env(safe-area-inset-bottom)) {
+        body {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

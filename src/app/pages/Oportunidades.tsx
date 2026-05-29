@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lightbulb, Eye, Trash2, FileCode, Download, Copy, FileDown, Search, X } from 'lucide-react';
+import { Lightbulb, Eye, Trash2, FileCode, Download, Copy, FileDown, Search, X, SlidersHorizontal } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Tag } from '../components/Tag';
 import { Modal } from '../components/Modal';
+import { BottomSheet } from '../components/BottomSheet';
 import { Button } from '../components/Button';
 import { Input } from '../components/Input';
 import { Select } from '../components/Select';
@@ -41,6 +42,7 @@ export function Oportunidades() {
   const [filters, setFilters] = useState<OpportunityFiltersState>(() => loadOpportunityFilters());
   const [promptModalOpportunity, setPromptModalOpportunity] = useState<Opportunity | null>(null);
   const [selectedTemplateType, setSelectedTemplateType] = useState<PromptTemplateType>('mvp-definition');
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
 
   useEffect(() => {
     saveOpportunityFilters(filters);
@@ -63,6 +65,7 @@ export function Oportunidades() {
   };
 
   const hasActiveFilters = filters.searchTerm || filters.statusFilter || filters.priorityFilter;
+  const activeFilterCount = [filters.statusFilter, filters.priorityFilter].filter(Boolean).length;
 
   const getPriorityBorder = (priority: string) => {
     switch (priority) {
@@ -186,17 +189,40 @@ export function Oportunidades() {
     }
   };
 
+  const FilterContent = () => (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
+        <Select
+          value={filters.statusFilter}
+          onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
+          options={[{ value: '', label: 'Status' }, ...OPPORTUNITY_STATUS_OPTIONS]}
+        />
+        <Select
+          value={filters.priorityFilter}
+          onChange={(e) => setFilters({ ...filters, priorityFilter: e.target.value })}
+          options={[{ value: '', label: 'Prioridade' }, ...PRIORITY_OPTIONS]}
+        />
+      </div>
+      {hasActiveFilters && (
+        <Button variant="ghost" onClick={clearFilters} size="sm" className="w-full">
+          <X size={14} />
+          Limpar filtros
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-4 mb-5">
         <div>
           <h1 className="text-2xl mb-0.5">Oportunidades</h1>
-          <p className="text-xs text-muted-foreground">Hipóteses de produto nascidas de observações</p>
+          <p className="text-xs text-muted-foreground hidden md:block">Hipóteses de produto nascidas de observações</p>
         </div>
         {filteredOpportunities.length > 0 && (
           <Button variant="secondary" size="sm" onClick={handleExportAll}>
             <FileDown size={14} />
-            Exportar
+            <span className="hidden md:inline">Exportar</span>
           </Button>
         )}
       </div>
@@ -209,16 +235,28 @@ export function Oportunidades() {
               value={filters.searchTerm}
               onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
               icon={<Search size={14} />}
+              className="min-h-[44px] md:min-h-0"
             />
           </div>
+          <button
+            onClick={() => setShowFilterSheet(true)}
+            className={`md:hidden flex items-center gap-1.5 px-3 rounded-md border border-border/60 text-xs font-medium transition-all min-h-[44px] active:scale-95 ${
+              activeFilterCount > 0
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-muted-foreground'
+            }`}
+          >
+            <SlidersHorizontal size={14} />
+            {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+          </button>
           {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters} size="sm">
+            <Button variant="ghost" onClick={clearFilters} size="sm" className="hidden md:flex">
               <X size={14} />
             </Button>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="hidden md:flex flex-wrap gap-2">
           <div className="w-36">
             <Select
               value={filters.statusFilter}
@@ -266,7 +304,7 @@ export function Oportunidades() {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
                     <h3 className="text-sm font-medium leading-snug">{opportunity.title}</h3>
-                    <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">{formatDate(opportunity.createdAt)}</span>
+                    <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0 hidden md:inline">{formatDate(opportunity.createdAt)}</span>
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-1 mb-1">{opportunity.originalProblem}</p>
                   {opportunity.hypothesis && (
@@ -286,21 +324,21 @@ export function Oportunidades() {
                 <div className="flex items-center gap-1 shrink-0">
                   <button
                     onClick={() => setSelectedOpportunity(opportunity)}
-                    className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
+                    className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded hover:bg-muted active:scale-95"
                     title="Ver detalhes"
                   >
                     <Eye size={14} />
                   </button>
                   <button
                     onClick={() => handleShowPrompt(opportunity)}
-                    className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted"
+                    className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded hover:bg-muted active:scale-95 hidden md:block"
                     title="Gerar prompt"
                   >
                     <FileCode size={14} />
                   </button>
                   <button
                     onClick={() => handleDeleteOpportunity(opportunity)}
-                    className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded hover:bg-muted"
+                    className="text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded hover:bg-muted active:scale-95"
                     title="Excluir"
                   >
                     <Trash2 size={14} />
@@ -347,7 +385,7 @@ export function Oportunidades() {
                     <button
                       key={opt.value}
                       onClick={() => handleChangePriority(selectedOpportunity, opt.value)}
-                      className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                      className={`px-2.5 py-1 rounded text-xs font-medium transition-all min-h-[32px] active:scale-95 ${
                         selectedOpportunity.priority === opt.value
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -403,7 +441,7 @@ export function Oportunidades() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border/50 gap-3">
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 flex-wrap">
                 <Button variant="secondary" size="sm" onClick={() => handleCopyOpportunity(selectedOpportunity)}>
                   <Copy size={14} />
                   Copiar
@@ -473,6 +511,10 @@ export function Oportunidades() {
           </div>
         )}
       </Modal>
+
+      <BottomSheet isOpen={showFilterSheet} onClose={() => setShowFilterSheet(false)} title="Filtros">
+        <FilterContent />
+      </BottomSheet>
     </div>
   );
 }

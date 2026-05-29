@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy, PenLine } from 'lucide-react';
+import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy, PenLine, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
@@ -8,6 +8,7 @@ import { Tag } from '../components/Tag';
 import { Select } from '../components/Select';
 import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
+import { BottomSheet } from '../components/BottomSheet';
 import { useApp } from '../context/AppContext';
 import { Atrito, AtritoStatus } from '../types';
 import { generateOpportunityFromAtrito } from '../utils/opportunityGenerator';
@@ -33,12 +34,44 @@ const defaultFilters: FiltersState = {
   statusFilter: '',
 };
 
+function groupByDate(atritos: Atrito[]): { label: string; items: Atrito[] }[] {
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+
+  const groups: { label: string; items: Atrito[] }[] = [];
+  const todayItems: Atrito[] = [];
+  const yesterdayItems: Atrito[] = [];
+  const olderItems: Atrito[] = [];
+
+  for (const atrito of atritos) {
+    const date = new Date(atrito.createdAt);
+    const atritoDate = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+
+    if (atritoDate.getTime() === today.getTime()) {
+      todayItems.push(atrito);
+    } else if (atritoDate.getTime() === yesterday.getTime()) {
+      yesterdayItems.push(atrito);
+    } else {
+      olderItems.push(atrito);
+    }
+  }
+
+  if (todayItems.length > 0) groups.push({ label: 'Hoje', items: todayItems });
+  if (yesterdayItems.length > 0) groups.push({ label: 'Ontem', items: yesterdayItems });
+  if (olderItems.length > 0) groups.push({ label: 'Anteriores', items: olderItems });
+
+  return groups;
+}
+
 export function Atritos() {
   const navigate = useNavigate();
   const { atritos, opportunities, investigationContexts, deleteAtrito, deleteOpportunity, updateAtrito, addOpportunity, addInvestigationContext } = useApp();
   const [filters, setFilters] = useState<FiltersState>(() => loadFilters());
   const [selectedAtrito, setSelectedAtrito] = useState<Atrito | null>(null);
   const [showInvestigationForm, setShowInvestigationForm] = useState(false);
+  const [showFilterSheet, setShowFilterSheet] = useState(false);
 
   const getContextForAtrito = (atritoId: string) => {
     return investigationContexts.find((c) => c.atritoId === atritoId);
@@ -73,6 +106,8 @@ export function Atritos() {
     filters.intensityFilter ||
     filters.frequencyFilter ||
     filters.statusFilter;
+
+  const activeFilterCount = [filters.contextFilter, filters.intensityFilter, filters.frequencyFilter, filters.statusFilter].filter(Boolean).length;
 
   const handleTransformToOpportunity = (atrito: Atrito) => {
     const existingOpportunity = opportunities.find((opp) => opp.atritos.includes(atrito.id));
@@ -158,14 +193,49 @@ export function Atritos() {
     }
   };
 
+  const groups = groupByDate(filteredAtritos);
+
+  const FilterContent = () => (
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
+        <Select
+          value={filters.contextFilter}
+          onChange={(e) => setFilters({ ...filters, contextFilter: e.target.value })}
+          options={[{ value: '', label: 'Contexto' }, ...CONTEXT_OPTIONS]}
+        />
+        <Select
+          value={filters.intensityFilter}
+          onChange={(e) => setFilters({ ...filters, intensityFilter: e.target.value })}
+          options={[{ value: '', label: 'Intensidade' }, ...INTENSITY_OPTIONS]}
+        />
+        <Select
+          value={filters.frequencyFilter}
+          onChange={(e) => setFilters({ ...filters, frequencyFilter: e.target.value })}
+          options={[{ value: '', label: 'Frequência' }, ...FREQUENCY_OPTIONS]}
+        />
+        <Select
+          value={filters.statusFilter}
+          onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
+          options={[{ value: '', label: 'Status' }, ...ATRITO_STATUS_OPTIONS]}
+        />
+      </div>
+      {hasActiveFilters && (
+        <Button variant="ghost" onClick={clearFilters} size="sm" className="w-full">
+          <X size={14} />
+          Limpar filtros
+        </Button>
+      )}
+    </div>
+  );
+
   return (
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-4 mb-5">
         <div>
           <h1 className="text-2xl mb-0.5">Atritos</h1>
-          <p className="text-xs text-muted-foreground">Observações de fricções cotidianas</p>
+          <p className="text-xs text-muted-foreground hidden md:block">Observações de fricções cotidianas</p>
         </div>
-        <Button onClick={() => navigate('/atritos/novo')} size="sm">
+        <Button onClick={() => navigate('/atritos/novo')} size="sm" className="hidden md:flex">
           <Plus size={14} />
           Nova
         </Button>
@@ -179,16 +249,28 @@ export function Atritos() {
               value={filters.searchTerm}
               onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
               icon={<Search size={14} />}
+              className="min-h-[44px] md:min-h-0"
             />
           </div>
+          <button
+            onClick={() => setShowFilterSheet(true)}
+            className={`md:hidden flex items-center gap-1.5 px-3 rounded-md border border-border/60 text-xs font-medium transition-all min-h-[44px] active:scale-95 ${
+              activeFilterCount > 0
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-muted-foreground'
+            }`}
+          >
+            <SlidersHorizontal size={14} />
+            {activeFilterCount > 0 && <span>{activeFilterCount}</span>}
+          </button>
           {hasActiveFilters && (
-            <Button variant="ghost" onClick={clearFilters} size="sm">
+            <Button variant="ghost" onClick={clearFilters} size="sm" className="hidden md:flex">
               <X size={14} />
             </Button>
           )}
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="hidden md:flex flex-wrap gap-2">
           <div className="w-36">
             <Select
               value={filters.contextFilter}
@@ -249,54 +331,53 @@ export function Atritos() {
           }
         />
       ) : (
-        <div className="space-y-2">
-          {filteredAtritos.map((atrito) => (
-            <Card key={atrito.id} className="py-3 px-4">
-              <div className="flex items-start gap-3">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2 mb-1">
-                    <h3 className="text-sm font-medium leading-snug">{atrito.title}</h3>
-                    <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0">{formatDate(atrito.createdAt)}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{atrito.description}</p>
-                  <div className="flex flex-wrap items-center gap-1.5">
-                    <Tag variant="context">{atrito.context}</Tag>
-                    <Tag variant="intensity">{atrito.intensity}</Tag>
-                    <Tag variant="frequency">{atrito.frequency}</Tag>
-                    <span className={`text-[11px] px-1.5 py-0.5 rounded font-medium ${getStatusColor(atrito.status)}`}>
-                      {atrito.status}
-                    </span>
-                    {getContextForAtrito(atrito.id) && (
-                      <Tag variant="investigated">aprofundado</Tag>
-                    )}
-                  </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => setSelectedAtrito(atrito)}
-                    className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded hover:bg-muted"
-                    title="Ver detalhes"
-                  >
-                    <Eye size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleTransformToOpportunity(atrito)}
-                    className="text-muted-foreground hover:text-primary transition-colors p-1 rounded hover:bg-muted"
-                    title="Transformar em oportunidade"
-                    disabled={atrito.status === 'virou ideia'}
-                  >
-                    <Lightbulb size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteAtrito(atrito)}
-                    className="text-muted-foreground hover:text-destructive transition-colors p-1 rounded hover:bg-muted"
-                    title="Excluir"
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
+        <div className="space-y-4">
+          {groups.map((group) => (
+            <div key={group.label}>
+              <h3 className="text-xs text-muted-foreground font-medium mb-2 uppercase tracking-wider">{group.label}</h3>
+              <div className="space-y-2">
+                {group.items.map((atrito) => (
+                  <Card key={atrito.id} className="py-3 px-4">
+                    <div className="flex items-start gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h3 className="text-sm font-medium leading-snug">{atrito.title}</h3>
+                          <span className="text-[11px] text-muted-foreground whitespace-nowrap shrink-0 hidden md:inline">{formatDate(atrito.createdAt)}</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-1 mb-2">{atrito.description}</p>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <Tag variant="context">{atrito.context}</Tag>
+                          <Tag variant="intensity">{atrito.intensity}</Tag>
+                          <span className={`text-[11px] px-1.5 py-0.5 rounded font-medium ${getStatusColor(atrito.status)}`}>
+                            {atrito.status}
+                          </span>
+                          {getContextForAtrito(atrito.id) && (
+                            <Tag variant="investigated">aprofundado</Tag>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          onClick={() => setSelectedAtrito(atrito)}
+                          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded hover:bg-muted active:scale-95"
+                          title="Ver detalhes"
+                        >
+                          <Eye size={14} />
+                        </button>
+                        <button
+                          onClick={() => handleTransformToOpportunity(atrito)}
+                          className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded hover:bg-muted active:scale-95 md:hidden"
+                          title="Transformar em oportunidade"
+                          disabled={atrito.status === 'virou ideia'}
+                        >
+                          <Lightbulb size={14} />
+                        </button>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
               </div>
-            </Card>
+            </div>
           ))}
         </div>
       )}
@@ -342,7 +423,7 @@ export function Atritos() {
                   <button
                     key={opt.value}
                     onClick={() => handleChangeStatus(selectedAtrito, opt.value)}
-                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all ${
+                    className={`px-2.5 py-1 rounded text-xs font-medium transition-all min-h-[32px] active:scale-95 ${
                       selectedAtrito.status === opt.value
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
@@ -370,7 +451,7 @@ export function Atritos() {
             })()}
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border/50 gap-3">
-              <div className="flex gap-1.5">
+              <div className="flex gap-1.5 flex-wrap">
                 <Button variant="secondary" size="sm" onClick={() => handleCopyAtrito(selectedAtrito)}>
                   <Copy size={14} />
                   Copiar
@@ -386,7 +467,7 @@ export function Atritos() {
               </div>
               <div className="flex flex-col items-end gap-1">
                 {!getContextForAtrito(selectedAtrito.id) && selectedAtrito.status !== 'virou ideia' && (
-                  <p className="text-[11px] text-muted-foreground text-right max-w-[220px]">
+                  <p className="text-[11px] text-muted-foreground text-right max-w-[220px] hidden md:block">
                     Aprofundar o contexto antes de transformar tende a gerar prompts melhores.
                   </p>
                 )}
@@ -403,6 +484,10 @@ export function Atritos() {
           </div>
         )}
       </Modal>
+
+      <BottomSheet isOpen={showFilterSheet} onClose={() => setShowFilterSheet(false)} title="Filtros">
+        <FilterContent />
+      </BottomSheet>
 
       {selectedAtrito && (
         <InvestigationContextForm

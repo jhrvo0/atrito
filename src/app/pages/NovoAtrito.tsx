@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check } from 'lucide-react';
+import { ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
@@ -36,6 +36,7 @@ function ChipSelect({ options, value, onChange, label }: {
   value: string;
   onChange: (v: string) => void;
   label?: string;
+  compact?: boolean;
 }) {
   return (
     <div>
@@ -46,7 +47,7 @@ function ChipSelect({ options, value, onChange, label }: {
             key={opt.value}
             type="button"
             onClick={() => onChange(opt.value)}
-            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-150 border ${
+            className={`inline-flex items-center gap-1.5 px-3 py-2 md:py-1.5 rounded-full text-xs font-medium transition-all duration-150 border min-h-[36px] md:min-h-0 active:scale-95 ${
               value === opt.value
                 ? 'bg-primary text-primary-foreground border-primary'
                 : 'bg-card text-muted-foreground border-border/60 hover:border-border hover:text-foreground'
@@ -65,6 +66,7 @@ export function NovoAtrito() {
   const navigate = useNavigate();
   const { addAtrito } = useApp();
   const [errors, setErrors] = useState<string[]>([]);
+  const [showDetails, setShowDetails] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     title: '',
     description: '',
@@ -80,11 +82,8 @@ export function NovoAtrito() {
 
     const newErrors: string[] = [];
     if (!formData.title.trim()) newErrors.push('Título');
-    if (!formData.description.trim()) newErrors.push('Descrição');
     if (!formData.context) newErrors.push('Contexto');
     if (!formData.intensity) newErrors.push('Intensidade');
-    if (!formData.frequency) newErrors.push('Frequência');
-    if (!formData.affected) newErrors.push('Afetado');
 
     if (newErrors.length > 0) {
       setErrors(newErrors);
@@ -134,14 +133,11 @@ export function NovoAtrito() {
     }
   };
 
-  const filledCount = [formData.context, formData.intensity, formData.frequency, formData.affected].filter(Boolean).length;
-  const totalRequired = 4;
-
   return (
     <div className="max-w-4xl mx-auto">
       <button
         onClick={() => navigate('/atritos')}
-        className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm"
+        className="hidden md:flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors mb-6 text-sm"
       >
         <ArrowLeft size={16} />
         Voltar
@@ -152,8 +148,11 @@ export function NovoAtrito() {
           <div className="mb-6">
             <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2 font-medium">Nova observação</p>
             <h1 className="text-2xl mb-1 leading-tight">Ficha de observação</h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground hidden md:block">
               Registe o que aconteceu, onde e como isso impactou seu dia.
+            </p>
+            <p className="text-sm text-muted-foreground md:hidden">
+              O que te incomodou?
             </p>
           </div>
 
@@ -163,8 +162,8 @@ export function NovoAtrito() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <Card className="space-y-5">
+          <form onSubmit={handleSubmit}>
+            <Card className="space-y-5 mb-4">
               <div>
                 <label className="block text-xs text-muted-foreground mb-2 font-medium">
                   O que aconteceu? <span className="text-destructive">*</span>
@@ -173,32 +172,16 @@ export function NovoAtrito() {
                   placeholder="Ex: Fila lenta no caixa do supermercado"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="min-h-[44px] md:min-h-0"
                 />
-                <p className="text-[11px] text-muted-foreground/60 mt-1.5">
+                <p className="text-[11px] text-muted-foreground/60 mt-1.5 hidden md:block">
                   Um título curto e direto descrevendo a fricção.
                 </p>
               </div>
 
               <div>
                 <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                  Descrição <span className="text-destructive">*</span>
-                </label>
-                <Textarea
-                  placeholder="Descreva o que aconteceu, o contexto e por que isso foi um problema..."
-                  value={formData.description}
-                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                  rows={3}
-                />
-                <p className="text-[11px] text-muted-foreground/60 mt-1.5">
-                  Contextualize: o que você esperava vs. o que aconteceu.
-                </p>
-              </div>
-            </Card>
-
-            <Card className="space-y-5">
-              <div>
-                <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                  Onde esse atrito apareceu? <span className="text-destructive">*</span>
+                  Contexto <span className="text-destructive">*</span>
                 </label>
                 <ChipSelect
                   options={CONTEXT_OPTIONS}
@@ -207,64 +190,145 @@ export function NovoAtrito() {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                    Qual foi o peso disso? <span className="text-destructive">*</span>
-                  </label>
-                  <ChipSelect
-                    options={INTENSITY_OPTIONS}
-                    value={formData.intensity}
-                    onChange={(v) => setFormData({ ...formData, intensity: v })}
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                    Com que frequência acontece? <span className="text-destructive">*</span>
-                  </label>
-                  <ChipSelect
-                    options={FREQUENCY_OPTIONS}
-                    value={formData.frequency}
-                    onChange={(v) => setFormData({ ...formData, frequency: v })}
-                  />
-                </div>
-              </div>
-
               <div>
                 <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                  Quem foi afetado? <span className="text-destructive">*</span>
+                  Intensidade <span className="text-destructive">*</span>
                 </label>
                 <ChipSelect
-                  options={AFFECTED_OPTIONS}
-                  value={formData.affected}
-                  onChange={(v) => setFormData({ ...formData, affected: v })}
+                  options={INTENSITY_OPTIONS}
+                  value={formData.intensity}
+                  onChange={(v) => setFormData({ ...formData, intensity: v })}
                 />
               </div>
             </Card>
 
-            <Card>
-              <div>
-                <label className="block text-xs text-muted-foreground mb-2 font-medium">Houve alguma solução improvisada?</label>
-                <Textarea
-                  placeholder="Como você ou outros contornaram esse problema na hora?"
-                  value={formData.improvisedSolution}
-                  onChange={(e) => setFormData({ ...formData, improvisedSolution: e.target.value })}
-                  rows={2}
-                />
-                <p className="text-[11px] text-muted-foreground/60 mt-1.5">
-                  Workarounds revelam oportunidades reais de produto.
-                </p>
-              </div>
-            </Card>
+            <div className="hidden md:block">
+              <Card className="space-y-5 mb-4">
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-2 font-medium">
+                    Descrição <span className="text-destructive">*</span>
+                  </label>
+                  <Textarea
+                    placeholder="Descreva o que aconteceu, o contexto e por que isso foi um problema..."
+                    value={formData.description}
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    rows={3}
+                  />
+                  <p className="text-[11px] text-muted-foreground/60 mt-1.5">
+                    Contextualize: o que você esperava vs. o que aconteceu.
+                  </p>
+                </div>
 
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button type="submit" className="w-full sm:w-auto">
-                Salvar observação
-              </Button>
-              <Button type="button" variant="ghost" onClick={handleCancel} className="w-full sm:w-auto">
-                Cancelar
-              </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2 font-medium">
+                      Frequência <span className="text-destructive">*</span>
+                    </label>
+                    <ChipSelect
+                      options={FREQUENCY_OPTIONS}
+                      value={formData.frequency}
+                      onChange={(v) => setFormData({ ...formData, frequency: v })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2 font-medium">
+                      Quem foi afetado? <span className="text-destructive">*</span>
+                    </label>
+                    <ChipSelect
+                      options={AFFECTED_OPTIONS}
+                      value={formData.affected}
+                      onChange={(v) => setFormData({ ...formData, affected: v })}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs text-muted-foreground mb-2 font-medium">Solução improvisada</label>
+                  <Textarea
+                    placeholder="Como você ou outros contornaram esse problema na hora?"
+                    value={formData.improvisedSolution}
+                    onChange={(e) => setFormData({ ...formData, improvisedSolution: e.target.value })}
+                    rows={2}
+                  />
+                  <p className="text-[11px] text-muted-foreground/60 mt-1.5">
+                    Workarounds revelam oportunidades reais de produto.
+                  </p>
+                </div>
+              </Card>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button type="submit" className="w-full sm:w-auto">
+                  Salvar observação
+                </Button>
+                <Button type="button" variant="ghost" onClick={handleCancel} className="w-full sm:w-auto">
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+
+            <div className="md:hidden">
+              <button
+                type="button"
+                onClick={() => setShowDetails(!showDetails)}
+                className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors py-3 w-full"
+              >
+                {showDetails ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                <span className="font-medium">{showDetails ? 'Ocultar detalhes' : 'Adicionar detalhes'}</span>
+              </button>
+
+              {showDetails && (
+                <Card className="space-y-5 mb-4 animate-in slide-in-from-top duration-200">
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Descrição</label>
+                    <Textarea
+                      placeholder="O que aconteceu e por que foi problema..."
+                      value={formData.description}
+                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                      rows={2}
+                      className="min-h-[44px]"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Frequência</label>
+                    <ChipSelect
+                      options={FREQUENCY_OPTIONS}
+                      value={formData.frequency}
+                      onChange={(v) => setFormData({ ...formData, frequency: v })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Quem afetou?</label>
+                    <ChipSelect
+                      options={AFFECTED_OPTIONS}
+                      value={formData.affected}
+                      onChange={(v) => setFormData({ ...formData, affected: v })}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Solução improvisada</label>
+                    <Textarea
+                      placeholder="Workaround usado..."
+                      value={formData.improvisedSolution}
+                      onChange={(e) => setFormData({ ...formData, improvisedSolution: e.target.value })}
+                      rows={2}
+                      className="min-h-[44px]"
+                    />
+                  </div>
+                </Card>
+              )}
+
+              <div className="flex gap-3 sticky bottom-16 bg-background pt-3 pb-2 -mx-4 px-4 border-t border-border/50">
+                <Button type="button" variant="ghost" onClick={handleCancel} className="flex-1 min-h-[44px]">
+                  Cancelar
+                </Button>
+                <Button type="submit" className="flex-1 min-h-[44px]">
+                  Salvar
+                </Button>
+              </div>
             </div>
           </form>
         </div>
@@ -286,24 +350,7 @@ export function NovoAtrito() {
                   <p className="text-muted-foreground text-xs">Intensidade</p>
                   <p className="font-medium text-sm capitalize">{formData.intensity || <span className="text-muted-foreground/40">—</span>}</p>
                 </div>
-                <div>
-                  <p className="text-muted-foreground text-xs">Frequência</p>
-                  <p className="font-medium text-sm capitalize">{formData.frequency || <span className="text-muted-foreground/40">—</span>}</p>
-                </div>
               </div>
-            </div>
-
-            <div className="border-t border-border/50 pt-3">
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="h-1.5 flex-1 bg-muted rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-primary rounded-full transition-all duration-300"
-                    style={{ width: `${(filledCount / totalRequired) * 100}%` }}
-                  />
-                </div>
-                <span className="text-[11px] text-muted-foreground">{filledCount}/{totalRequired}</span>
-              </div>
-              <p className="text-[11px] text-muted-foreground/60">Campos obrigatórios preenchidos</p>
             </div>
 
             <div className="border-t border-border/50 pt-3">

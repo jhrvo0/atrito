@@ -19,7 +19,7 @@ export function Button({
   type = 'button',
   disabled = false,
 }: ButtonProps) {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-150 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]';
 
   const variants = {
     primary: 'bg-primary text-primary-foreground hover:opacity-90 shadow-sm',
@@ -29,9 +29,9 @@ export function Button({
   };
 
   const sizes = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-5 py-2.5 text-sm'
+    sm: 'px-3 py-1.5 text-xs min-h-[32px]',
+    md: 'px-4 py-2.5 text-sm min-h-[40px]',
+    lg: 'px-5 py-3 text-sm min-h-[44px]'
   };
 
   return (

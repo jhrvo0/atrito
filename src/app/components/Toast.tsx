@@ -38,7 +38,7 @@ export function ToastContainer() {
   if (toasts.length === 0) return null;
 
   return (
-    <div className="fixed bottom-4 right-4 z-[100] flex flex-col gap-1.5">
+    <div className="fixed bottom-20 md:bottom-4 left-4 right-4 md:left-auto md:right-4 z-[100] flex flex-col gap-1.5 pointer-events-none">
       {toasts.map((toast) => {
         const colors = {
           success: 'bg-foreground text-background',
@@ -49,10 +49,10 @@ export function ToastContainer() {
         return (
           <div
             key={toast.id}
-            className={`${colors} px-3 py-2 rounded-lg shadow-lg text-xs flex items-center gap-2 min-w-[160px] max-w-[320px] animate-in slide-in-from-bottom-2 fade-in duration-200`}
+            className={`${colors} px-3 py-2.5 rounded-lg shadow-lg text-xs flex items-center gap-2 min-w-[160px] max-w-[320px] animate-in slide-in-from-bottom-2 fade-in duration-200 pointer-events-auto`}
           >
             <span className="flex-1">{toast.message}</span>
-            <button onClick={() => dismiss(toast.id)} className="opacity-60 hover:opacity-100 transition-opacity">
+            <button onClick={() => dismiss(toast.id)} className="opacity-60 hover:opacity-100 transition-opacity p-1">
               <X size={12} />
             </button>
           </div>

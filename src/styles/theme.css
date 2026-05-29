@@ -49,12 +49,12 @@
   --popover: #1C1917;
   --popover-foreground: #FAFAF9;
   --primary: #FB923C;
-  --primary-foreground: #1C1917;
+  --primary-foreground: #0C0A09;
   --secondary: #292524;
   --secondary-foreground: #FAFAF9;
   --muted: #292524;
   --muted-foreground: #A8A29E;
-  --accent: #292524;
+  --accent: #422006;
   --accent-foreground: #FDE68A;
   --destructive: #EF4444;
   --destructive-foreground: #FFFFFF;
@@ -73,7 +73,7 @@
   --sidebar: #1C1917;
   --sidebar-foreground: #FAFAF9;
   --sidebar-primary: #FB923C;
-  --sidebar-primary-foreground: #1C1917;
+  --sidebar-primary-foreground: #0C0A09;
   --sidebar-accent: #292524;
   --sidebar-accent-foreground: #FAFAF9;
   --sidebar-border: rgba(250, 250, 249, 0.06);
@@ -184,5 +184,15 @@
   ::selection {
     background-color: var(--accent);
     color: var(--accent-foreground);
+  }
+}
+
+@layer utilities {
+  .safe-area-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+
+  .safe-area-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }

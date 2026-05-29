@@ -1,9 +1,12 @@
-import { FileText, Lightbulb, AlertTriangle, Clock } from 'lucide-react';
+import { FileText, Lightbulb, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
+import { Button } from '../components/Button';
 import { useApp } from '../context/AppContext';
 import { formatDate } from '../utils/date';
 
 export function Padroes() {
+  const navigate = useNavigate();
   const { atritos, opportunities } = useApp();
 
   const contextCounts = atritos.reduce(
@@ -94,8 +97,12 @@ export function Padroes() {
           <p className="text-sm text-muted-foreground">Insights emergentes das suas observações.</p>
         </div>
         <Card className="py-10 text-center">
+          <FileText size={32} className="mx-auto text-muted-foreground/40 mb-3" />
           <p className="text-sm text-muted-foreground mb-1">Nenhum dado para analisar.</p>
-          <p className="text-xs text-muted-foreground/60">Registre algumas observações primeiro para ver padrões emergentes.</p>
+          <p className="text-xs text-muted-foreground/60 mb-4">Registre algumas observações primeiro para ver padrões emergentes.</p>
+          <Button size="sm" onClick={() => navigate('/atritos/novo')}>
+            Registrar observação
+          </Button>
         </Card>
       </div>
     );
@@ -106,10 +113,10 @@ export function Padroes() {
       <div className="mb-6">
         <p className="text-xs uppercase tracking-widest text-muted-foreground mb-2 font-medium">Análise</p>
         <h1 className="text-2xl mb-1">Padrões</h1>
-        <p className="text-sm text-muted-foreground">Insights emergentes das suas observações.</p>
+        <p className="text-sm text-muted-foreground hidden md:block">Insights emergentes das suas observações.</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
         <Card className="text-center py-3">
           <p className="text-2xl font-display">{atritos.length}</p>
           <p className="text-[11px] text-muted-foreground mt-0.5">observações</p>
@@ -128,62 +135,127 @@ export function Padroes() {
         </Card>
       </div>
 
-      <div className="space-y-6">
-        <section>
-          <h2 className="text-base font-medium mb-3">Resumo geral</h2>
-          <Card>
-            <div className="space-y-4">
-              <div>
-                <h3 className="text-xs text-muted-foreground mb-2">Atritos por contexto</h3>
-                <div className="space-y-2">
-                  {sortedContexts.length === 0 ? (
-                    <p className="text-xs text-muted-foreground/60">Sem dados</p>
-                  ) : (
-                    sortedContexts.map(([context, count]) => (
-                      <div key={context}>
-                        <div className="flex items-center justify-between mb-0.5">
-                          <span className="text-xs capitalize">{context}</span>
-                          <span className="text-xs text-muted-foreground font-medium">{count}</span>
-                        </div>
-                        <div className="h-1.5 bg-muted rounded-full overflow-hidden">
-                          <div
-                            className="h-full bg-primary/70 rounded-full transition-all duration-300"
-                            style={{ width: getBarWidth(count, maxContextCount) }}
-                          />
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-            </div>
-          </Card>
-        </section>
-
-        <section>
-          <h2 className="text-base font-medium mb-3">Contextos problemáticos</h2>
-          <Card>
-            {mostProblematicContexts.length === 0 ? (
-              <p className="text-xs text-muted-foreground/60">Sem dados</p>
-            ) : (
-              <div className="space-y-3">
+      <div className="space-y-4 md:space-y-6">
+        {mostProblematicContexts.length > 0 && (
+          <section>
+            <h2 className="text-base font-medium mb-3">Contextos mais problemáticos</h2>
+            <Card>
+              <div className="space-y-2.5">
                 {mostProblematicContexts.map(([context, count], index) => (
                   <div key={context} className="flex items-baseline gap-3">
                     <span className="text-xs text-muted-foreground/40 font-mono w-4 shrink-0">{String(index + 1).padStart(2, '0')}</span>
                     <div className="flex-1">
-                      <p className="text-sm font-medium capitalize">{context}</p>
-                      <p className="text-[11px] text-muted-foreground">{count} ocorrência{count > 1 ? 's' : ''}</p>
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="text-sm font-medium capitalize">{context}</span>
+                        <span className="text-xs text-muted-foreground font-medium">{count}</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary/70 rounded-full transition-all duration-300"
+                          style={{ width: getBarWidth(count, maxContextCount) }}
+                        />
+                      </div>
                     </div>
                   </div>
                 ))}
               </div>
-            )}
-          </Card>
-        </section>
+            </Card>
+          </section>
+        )}
 
-        <section>
-          <h2 className="text-base font-medium mb-3">Recorrência</h2>
+        {highIntensityAtritos.length > 0 && (
+          <section>
+            <h2 className="text-base font-medium mb-3">Maior impacto</h2>
+            <Card>
+              <div className="space-y-2.5">
+                {highIntensityAtritos.map((atrito) => (
+                  <div key={atrito.id} className="border-l-2 border-orange-400 dark:border-orange-500/60 pl-3">
+                    <p className="text-sm font-medium leading-snug">{atrito.title}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[11px] text-muted-foreground capitalize">{atrito.context}</span>
+                      <span className="text-[11px] text-muted-foreground/30">·</span>
+                      <span className="text-[11px] text-muted-foreground">{formatDate(atrito.createdAt)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {frequentProblems.length > 0 && (
+          <section>
+            <h2 className="text-base font-medium mb-3">Problemas recorrentes</h2>
+            <Card>
+              <div className="space-y-2.5">
+                {frequentProblems.map((atrito) => (
+                  <div key={atrito.id} className="border-l-2 border-amber-400 dark:border-amber-500/60 pl-3">
+                    <p className="text-sm font-medium leading-snug">{atrito.title}</p>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[11px] text-muted-foreground capitalize">{atrito.context}</span>
+                      <span className="text-[11px] text-muted-foreground/30">·</span>
+                      <span className="text-[11px] text-muted-foreground">{formatDate(atrito.createdAt)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          </section>
+        )}
+
+        {highPriorityOpportunities.length > 0 && (
+          <section>
+            <h2 className="text-base font-medium mb-3">Oportunidades prioritárias</h2>
+            <div className="space-y-2">
+              {highPriorityOpportunities.map((opportunity) => (
+                <Card key={opportunity.id} className="py-3 px-4">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium leading-snug">{opportunity.title}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
+                        {opportunity.originalProblem}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => navigate('/oportunidades')}
+                      className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded active:scale-95 shrink-0"
+                    >
+                      <ArrowRight size={14} />
+                    </button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <section className="hidden md:block">
+          <h2 className="text-base font-medium mb-3">Distribuição completa</h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <Card>
+              <h3 className="text-xs text-muted-foreground mb-2">Atritos por contexto</h3>
+              <div className="space-y-2">
+                {sortedContexts.length === 0 ? (
+                  <p className="text-xs text-muted-foreground/60">Sem dados</p>
+                ) : (
+                  sortedContexts.map(([context, count]) => (
+                    <div key={context}>
+                      <div className="flex items-center justify-between mb-0.5">
+                        <span className="text-xs capitalize">{context}</span>
+                        <span className="text-xs text-muted-foreground font-medium">{count}</span>
+                      </div>
+                      <div className="h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary/70 rounded-full transition-all duration-300"
+                          style={{ width: getBarWidth(count, maxContextCount) }}
+                        />
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </Card>
+
             <Card>
               <h3 className="text-xs text-muted-foreground mb-2">Distribuição por frequência</h3>
               <div className="space-y-2">
@@ -231,56 +303,7 @@ export function Padroes() {
                 )}
               </div>
             </Card>
-          </div>
-        </section>
 
-        <section>
-          <h2 className="text-base font-medium mb-3">Observações de maior impacto</h2>
-          <Card>
-            <div className="space-y-3">
-              {highIntensityAtritos.length === 0 ? (
-                <p className="text-xs text-muted-foreground/60">Nenhuma observação de alta intensidade</p>
-              ) : (
-                highIntensityAtritos.map((atrito) => (
-                  <div key={atrito.id} className="border-l-2 border-orange-400 dark:border-orange-500/60 pl-3">
-                    <p className="text-sm font-medium leading-snug">{atrito.title}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[11px] text-muted-foreground capitalize">{atrito.context}</span>
-                      <span className="text-[11px] text-muted-foreground/30">·</span>
-                      <span className="text-[11px] text-muted-foreground">{formatDate(atrito.createdAt)}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-        </section>
-
-        <section>
-          <h2 className="text-base font-medium mb-3">Problemas recorrentes</h2>
-          <Card>
-            <div className="space-y-3">
-              {frequentProblems.length === 0 ? (
-                <p className="text-xs text-muted-foreground/60">Nenhum problema frequente identificado</p>
-              ) : (
-                frequentProblems.map((atrito) => (
-                  <div key={atrito.id} className="border-l-2 border-amber-400 dark:border-amber-500/60 pl-3">
-                    <p className="text-sm font-medium leading-snug">{atrito.title}</p>
-                    <div className="flex items-center gap-1.5 mt-0.5">
-                      <span className="text-[11px] text-muted-foreground capitalize">{atrito.context}</span>
-                      <span className="text-[11px] text-muted-foreground/30">·</span>
-                      <span className="text-[11px] text-muted-foreground">{formatDate(atrito.createdAt)}</span>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </Card>
-        </section>
-
-        <section>
-          <h2 className="text-base font-medium mb-3">Oportunidades com maior potencial</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Card>
               <h3 className="text-xs text-muted-foreground mb-2">Status das oportunidades</h3>
               <div className="space-y-2">
@@ -299,24 +322,6 @@ export function Padroes() {
                           style={{ width: getBarWidth(count, opportunities.length) }}
                         />
                       </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </Card>
-
-            <Card>
-              <h3 className="text-xs text-muted-foreground mb-2">Alta prioridade</h3>
-              <div className="space-y-2.5">
-                {highPriorityOpportunities.length === 0 ? (
-                  <p className="text-xs text-muted-foreground/60">Nenhuma oportunidade de alta prioridade</p>
-                ) : (
-                  highPriorityOpportunities.map((opportunity) => (
-                    <div key={opportunity.id} className="border-l-2 border-primary pl-3">
-                      <p className="text-sm font-medium leading-snug">{opportunity.title}</p>
-                      <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-1">
-                        {opportunity.originalProblem}
-                      </p>
                     </div>
                   ))
                 )}

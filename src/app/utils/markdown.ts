@@ -1,68 +1,84 @@
 import { Atrito, Opportunity } from '../types';
+import { formatDate } from './date';
 
 export function exportAtritoToMarkdown(atrito: Atrito): string {
-  return `# Atrito: ${atrito.title}
+  const lines = [
+    `# Atrito: ${atrito.title}`,
+    '',
+    `**Data:** ${formatDate(atrito.createdAt)}`,
+    `**Status:** ${atrito.status}`,
+    `**Contexto:** ${atrito.context}`,
+    `**Intensidade:** ${atrito.intensity}`,
+    `**Frequência:** ${atrito.frequency}`,
+    `**Afetado:** ${atrito.affected}`,
+    '',
+    '## Descrição',
+    '',
+    atrito.description,
+  ];
 
-**Data:** ${atrito.createdAt}
-**Status:** ${atrito.status}
-**Contexto:** ${atrito.context}
-**Intensidade:** ${atrito.intensity}
-**Frequência:** ${atrito.frequency}
-**Afetado:** ${atrito.affected}
+  if (atrito.improvisedSolution) {
+    lines.push('', '## Solução Improvisada', '', atrito.improvisedSolution);
+  }
 
-## Descrição
+  lines.push('', '---', '*Observação: este registro faz parte do projeto Atrito — uma ferramenta de observação deliberada de problemas cotidianos.*');
 
-${atrito.description}
-
-${atrito.improvisedSolution ? `## Solução Improvisada\n\n${atrito.improvisedSolution}` : ''}
-`;
+  return lines.join('\n');
 }
 
 export function exportOpportunityToMarkdown(opportunity: Opportunity): string {
-  return `# Oportunidade: ${opportunity.title}
+  const lines = [
+    `# Oportunidade: ${opportunity.title}`,
+    '',
+    `**Data:** ${formatDate(opportunity.createdAt)}`,
+    `**Status:** ${opportunity.status}`,
+    `**Prioridade:** ${opportunity.priority}`,
+    `**Público:** ${opportunity.targetAudience}`,
+    '',
+    '## Problema Observado',
+    '',
+    opportunity.originalProblem,
+    '',
+    '## Hipótese de Solução',
+    '',
+    opportunity.hypothesis || 'A definir',
+    '',
+    '## Por que isso importa',
+    '',
+    opportunity.whyItMatters || 'A definir',
+    '',
+    '## MVP Sugerido',
+    '',
+    opportunity.suggestedMVP || 'A definir',
+    '',
+    '## O que NÃO construir agora',
+    '',
+    opportunity.whatNotToBuild || 'A definir',
+    '',
+    '## Pergunta de Validação',
+    '',
+    opportunity.validationQuestion || 'A definir',
+  ];
 
-**Data:** ${opportunity.createdAt}
-**Status:** ${opportunity.status}
-**Prioridade:** ${opportunity.priority}
-**Público:** ${opportunity.targetAudience}
+  if (opportunity.atritos.length > 0) {
+    lines.push('', `---`, `*Referência: atrito(s) #${opportunity.atritos.join(', #')}*`);
+  }
 
-## Problema Original
-
-${opportunity.originalProblem}
-
-## Hipótese de Solução
-
-${opportunity.hypothesis || 'A definir'}
-
-## Por que isso importa
-
-${opportunity.whyItMatters || 'A definir'}
-
-## MVP Sugerido
-
-${opportunity.suggestedMVP || 'A definir'}
-
-## O que NÃO construir agora
-
-${opportunity.whatNotToBuild || 'A definir'}
-
-## Pergunta de Validação
-
-${opportunity.validationQuestion || 'A definir'}
-`;
+  return lines.join('\n');
 }
 
 export function exportAllOpportunitiesToMarkdown(opportunities: Opportunity[]): string {
-  const header = `# Todas as Oportunidades - Atrito
+  const header = [
+    '# Todas as Oportunidades — Atrito',
+    '',
+    `**Exportado em:** ${formatDate(new Date().toISOString())}`,
+    `**Total:** ${opportunities.length} oportunidades`,
+    '',
+    '---',
+    '',
+  ].join('\n');
 
-**Exportado em:** ${new Date().toLocaleDateString('pt-BR')}
-**Total:** ${opportunities.length} oportunidades
-
----
-
-`;
-
-  const items = opportunities.map((opp) => exportOpportunityToMarkdown(opp)).join('\n---\n\n');
+  const items = opportunities.map((opp) => exportOpportunityToMarkdown(opp)).join('\n\n---\n\n');
 
   return header + items;
 }

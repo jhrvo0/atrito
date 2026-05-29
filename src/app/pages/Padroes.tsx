@@ -1,7 +1,7 @@
-import React from 'react';
-import { TrendingUp, FileText, Lightbulb, MapPin, AlertTriangle, Clock, BarChart3 } from 'lucide-react';
+import { FileText, Lightbulb, AlertTriangle, Clock } from 'lucide-react';
 import { Card } from '../components/Card';
 import { useApp } from '../context/AppContext';
+import { formatDate } from '../utils/date';
 
 export function Padroes() {
   const { atritos, opportunities } = useApp();
@@ -235,7 +235,7 @@ export function Padroes() {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="capitalize">{atrito.context}</span>
                     <span>·</span>
-                    <span>{atrito.createdAt}</span>
+                    <span>{formatDate(atrito.createdAt)}</span>
                   </div>
                 </div>
               ))
@@ -255,7 +255,7 @@ export function Padroes() {
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="capitalize">{atrito.context}</span>
                     <span>·</span>
-                    <span>{atrito.createdAt}</span>
+                    <span>{formatDate(atrito.createdAt)}</span>
                   </div>
                 </div>
               ))
@@ -307,7 +307,7 @@ export function Padroes() {
                     <span className="text-xs px-2 py-0.5 rounded bg-green-50 text-green-700">
                       {opportunity.status}
                     </span>
-                    <span className="text-xs text-muted-foreground">{opportunity.createdAt}</span>
+                    <span className="text-xs text-muted-foreground">{formatDate(opportunity.createdAt)}</span>
                   </div>
                 </div>
               ))

@@ -1,4 +1,3 @@
-import React, { useState } from 'react';
 import { AppProvider } from './context/AppContext';
 import { Sidebar } from './components/Sidebar';
 import { MobileNav } from './components/MobileNav';
@@ -7,6 +6,9 @@ import { Atritos } from './pages/Atritos';
 import { NovoAtrito } from './pages/NovoAtrito';
 import { Oportunidades } from './pages/Oportunidades';
 import { Padroes } from './pages/Padroes';
+import { ToastContainer } from './components/Toast';
+import { ConfirmDialog } from './components/ConfirmDialog';
+import { useState } from 'react';
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState('inicio');
@@ -37,6 +39,8 @@ export default function App() {
           <div className="p-4 md:p-8 animate-in fade-in duration-200">{renderPage()}</div>
         </main>
       </div>
+      <ToastContainer />
+      <ConfirmDialog />
     </AppProvider>
   );
 }

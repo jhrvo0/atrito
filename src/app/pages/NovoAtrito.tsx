@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
@@ -7,6 +7,19 @@ import { Textarea } from '../components/Textarea';
 import { Select } from '../components/Select';
 import { useApp } from '../context/AppContext';
 import { Atrito } from '../types';
+import {
+  CONTEXT_OPTIONS,
+  INTENSITY_OPTIONS,
+  FREQUENCY_OPTIONS,
+  AFFECTED_OPTIONS,
+  isValidContext,
+  isValidIntensity,
+  isValidFrequency,
+  isValidAffected,
+} from '../constants';
+import { toISOStringNow } from '../utils/date';
+import { showConfirm } from '../components/ConfirmDialog';
+import { showToast } from '../components/Toast';
 
 interface NovoAtritoProps {
   onNavigate: (page: string) => void;
@@ -14,6 +27,7 @@ interface NovoAtritoProps {
 
 export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
   const { addAtrito } = useApp();
+  const [errors, setErrors] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -21,47 +35,63 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
     intensity: '',
     frequency: '',
     affected: '',
-    improvisedSolution: ''
+    improvisedSolution: '',
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!formData.title || !formData.description || !formData.context || !formData.intensity || !formData.frequency || !formData.affected) {
-      alert('Por favor, preencha todos os campos obrigatórios');
+    const newErrors: string[] = [];
+    if (!formData.title.trim()) newErrors.push('Título');
+    if (!formData.description.trim()) newErrors.push('Descrição');
+    if (!formData.context) newErrors.push('Contexto');
+    if (!formData.intensity) newErrors.push('Intensidade');
+    if (!formData.frequency) newErrors.push('Frequência');
+    if (!formData.affected) newErrors.push('Afetado');
+
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
       return;
     }
 
+    setErrors([]);
+
     const newAtrito: Atrito = {
       id: Date.now().toString(),
-      title: formData.title,
-      description: formData.description,
-      context: formData.context as any,
-      intensity: formData.intensity as any,
-      frequency: formData.frequency as any,
-      affected: formData.affected as any,
-      improvisedSolution: formData.improvisedSolution || undefined,
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      context: formData.context as Atrito['context'],
+      intensity: formData.intensity as Atrito['intensity'],
+      frequency: formData.frequency as Atrito['frequency'],
+      affected: formData.affected as Atrito['affected'],
+      improvisedSolution: formData.improvisedSolution.trim() || undefined,
       status: 'observado',
-      createdAt: new Date().toISOString().split('T')[0]
+      createdAt: toISOStringNow(),
     };
 
     addAtrito(newAtrito);
+    showToast('Atrito registrado com sucesso!');
     onNavigate('atritos');
   };
 
-  const handleCancel = () => {
-    if (
+  const handleCancel = async () => {
+    const hasData =
       formData.title ||
       formData.description ||
       formData.context ||
       formData.intensity ||
       formData.frequency ||
       formData.affected ||
-      formData.improvisedSolution
-    ) {
-      if (confirm('Deseja descartar as alterações?')) {
-        onNavigate('atritos');
-      }
+      formData.improvisedSolution;
+
+    if (hasData) {
+      const confirmed = await showConfirm({
+        title: 'Descartar alterações?',
+        message: 'Você tem alterações não salvas. Deseja realmente sair?',
+        confirmLabel: 'Sair',
+        cancelLabel: 'Continuar editando',
+      });
+      if (confirmed) onNavigate('atritos');
     } else {
       onNavigate('atritos');
     }
@@ -83,6 +113,12 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
           Registre um problema, incômodo ou fricção que você observou no seu dia a dia
         </p>
       </div>
+
+      {errors.length > 0 && (
+        <div className="mb-6 p-4 rounded-lg bg-destructive/10 border border-destructive/20 text-sm text-destructive">
+          Preencha os campos obrigatórios: {errors.join(', ')}
+        </div>
+      )}
 
       <form onSubmit={handleSubmit}>
         <Card>
@@ -119,17 +155,7 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
                   value={formData.context}
                   onChange={(e) => setFormData({ ...formData, context: e.target.value })}
                   placeholder="Selecione o contexto"
-                  options={[
-                    { value: 'casa', label: 'Casa' },
-                    { value: 'rua', label: 'Rua' },
-                    { value: 'faculdade', label: 'Faculdade' },
-                    { value: 'trabalho', label: 'Trabalho' },
-                    { value: 'transporte', label: 'Transporte' },
-                    { value: 'app/site', label: 'App/Site' },
-                    { value: 'compra', label: 'Compra' },
-                    { value: 'atendimento', label: 'Atendimento' },
-                    { value: 'outro', label: 'Outro' }
-                  ]}
+                  options={CONTEXT_OPTIONS}
                 />
               </div>
 
@@ -141,11 +167,7 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
                   value={formData.intensity}
                   onChange={(e) => setFormData({ ...formData, intensity: e.target.value })}
                   placeholder="Qual o impacto?"
-                  options={[
-                    { value: 'baixa', label: 'Baixa' },
-                    { value: 'média', label: 'Média' },
-                    { value: 'alta', label: 'Alta' }
-                  ]}
+                  options={INTENSITY_OPTIONS}
                 />
               </div>
 
@@ -157,11 +179,7 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
                   value={formData.frequency}
                   onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
                   placeholder="Com que frequência?"
-                  options={[
-                    { value: 'uma vez', label: 'Aconteceu uma vez' },
-                    { value: 'às vezes', label: 'Às vezes' },
-                    { value: 'frequentemente', label: 'Frequentemente' }
-                  ]}
+                  options={FREQUENCY_OPTIONS}
                 />
               </div>
 
@@ -173,12 +191,7 @@ export function NovoAtrito({ onNavigate }: NovoAtritoProps) {
                   value={formData.affected}
                   onChange={(e) => setFormData({ ...formData, affected: e.target.value })}
                   placeholder="Quem sentiu isso?"
-                  options={[
-                    { value: 'eu', label: 'Eu' },
-                    { value: 'outra pessoa', label: 'Outra pessoa' },
-                    { value: 'grupo', label: 'Grupo' },
-                    { value: 'público geral', label: 'Público geral' }
-                  ]}
+                  options={AFFECTED_OPTIONS}
                 />
               </div>
             </div>

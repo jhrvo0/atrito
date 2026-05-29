@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
-import { Lightbulb, Eye, Trash2, FileCode, Download, Copy, FileDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Lightbulb, Eye, Trash2, FileCode, Download, Copy, FileDown, Search, X } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Tag } from '../components/Tag';
 import { Modal } from '../components/Modal';
 import { Button } from '../components/Button';
+import { Input } from '../components/Input';
 import { Select } from '../components/Select';
 import { EmptyState } from '../components/EmptyState';
 import { useApp } from '../context/AppContext';
@@ -15,19 +16,52 @@ import {
   downloadMarkdown,
   copyToClipboard,
 } from '../utils/markdown';
+import { formatDate } from '../utils/date';
+import {
+  OPPORTUNITY_STATUS_OPTIONS,
+  PRIORITY_OPTIONS,
+} from '../constants';
+import { loadOpportunityFilters, saveOpportunityFilters, OpportunityFiltersState } from '../utils/storage';
+import { showConfirm } from '../components/ConfirmDialog';
+import { showToast } from '../components/Toast';
 
 interface OportunidadesProps {
   onNavigate: (page: string) => void;
 }
 
+const defaultFilters: OpportunityFiltersState = {
+  searchTerm: '',
+  statusFilter: '',
+  priorityFilter: '',
+};
+
 export function Oportunidades({ onNavigate }: OportunidadesProps) {
   const { opportunities, deleteOpportunity, updateOpportunity } = useApp();
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [filters, setFilters] = useState<OpportunityFiltersState>(() => loadOpportunityFilters());
+  const [promptModalOpportunity, setPromptModalOpportunity] = useState<Opportunity | null>(null);
+
+  useEffect(() => {
+    saveOpportunityFilters(filters);
+  }, [filters]);
 
   const filteredOpportunities = opportunities.filter((opp) => {
-    return !statusFilter || opp.status === statusFilter;
+    const term = filters.searchTerm.toLowerCase();
+    const matchesSearch =
+      !term ||
+      opp.title.toLowerCase().includes(term) ||
+      opp.originalProblem.toLowerCase().includes(term) ||
+      opp.hypothesis.toLowerCase().includes(term);
+    const matchesStatus = !filters.statusFilter || opp.status === filters.statusFilter;
+    const matchesPriority = !filters.priorityFilter || opp.priority === filters.priorityFilter;
+    return matchesSearch && matchesStatus && matchesPriority;
   });
+
+  const clearFilters = () => {
+    setFilters(defaultFilters);
+  };
+
+  const hasActiveFilters = filters.searchTerm || filters.statusFilter || filters.priorityFilter;
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -59,29 +93,36 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
     }
   };
 
-  const handleCopyPrompt = async (opportunity: Opportunity) => {
-    const prompt = generatePrompt(opportunity);
+  const handleShowPrompt = (opportunity: Opportunity) => {
+    setPromptModalOpportunity(opportunity);
+  };
+
+  const handleCopyPrompt = async () => {
+    if (!promptModalOpportunity) return;
+    const prompt = generatePrompt(promptModalOpportunity);
     const success = await copyToClipboard(prompt);
     if (success) {
-      alert('Prompt copiado para área de transferência!');
+      showToast('Prompt copiado para a área de transferência!');
     }
   };
 
   const handleExportOpportunity = (opportunity: Opportunity) => {
     const markdown = exportOpportunityToMarkdown(opportunity);
     downloadMarkdown(markdown, `oportunidade-${opportunity.id}.md`);
+    showToast('Arquivo Markdown baixado!');
   };
 
   const handleExportAll = () => {
     const markdown = exportAllOpportunitiesToMarkdown(filteredOpportunities);
     downloadMarkdown(markdown, 'todas-oportunidades.md');
+    showToast('Arquivo Markdown baixado!');
   };
 
   const handleCopyOpportunity = async (opportunity: Opportunity) => {
     const markdown = exportOpportunityToMarkdown(opportunity);
     const success = await copyToClipboard(markdown);
     if (success) {
-      alert('Oportunidade copiada para área de transferência!');
+      showToast('Oportunidade copiada para a área de transferência!');
     }
   };
 
@@ -89,6 +130,19 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
     updateOpportunity(opportunity.id, { priority: newPriority });
     if (selectedOpportunity?.id === opportunity.id) {
       setSelectedOpportunity({ ...opportunity, priority: newPriority });
+    }
+  };
+
+  const handleDeleteOpportunity = async (opportunity: Opportunity) => {
+    const confirmed = await showConfirm({
+      title: 'Excluir oportunidade',
+      message: `Tem certeza que deseja excluir "${opportunity.title}"? Esta ação não pode ser desfeita.`,
+      confirmLabel: 'Excluir',
+    });
+    if (confirmed) {
+      deleteOpportunity(opportunity.id);
+      setSelectedOpportunity(null);
+      showToast('Oportunidade excluída.');
     }
   };
 
@@ -107,28 +161,60 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
         )}
       </div>
 
-      <div className="mb-6">
-        <Select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          placeholder="Filtrar por status"
-          options={[
-            { value: '', label: 'Todos os status' },
-            { value: 'ideia', label: 'Ideia' },
-            { value: 'validando', label: 'Validando' },
-            { value: 'protótipo', label: 'Protótipo' },
-            { value: 'em desenvolvimento', label: 'Em desenvolvimento' },
-            { value: 'arquivada', label: 'Arquivada' }
-          ]}
-        />
+      <div className="mb-6 space-y-3">
+        <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex-1">
+            <Input
+              placeholder="Buscar oportunidades..."
+              value={filters.searchTerm}
+              onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
+              icon={<Search size={18} />}
+            />
+          </div>
+          {hasActiveFilters && (
+            <Button variant="ghost" onClick={clearFilters} className="w-full sm:w-auto">
+              <X size={18} />
+              <span className="hidden sm:inline">Limpar filtros</span>
+              <span className="sm:hidden">Limpar</span>
+            </Button>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <Select
+            value={filters.statusFilter}
+            onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
+            placeholder="Filtrar por status"
+            options={[{ value: '', label: 'Todos os status' }, ...OPPORTUNITY_STATUS_OPTIONS]}
+          />
+          <Select
+            value={filters.priorityFilter}
+            onChange={(e) => setFilters({ ...filters, priorityFilter: e.target.value })}
+            placeholder="Filtrar por prioridade"
+            options={[{ value: '', label: 'Todas prioridades' }, ...PRIORITY_OPTIONS]}
+          />
+        </div>
       </div>
 
       {filteredOpportunities.length === 0 ? (
         <EmptyState
           icon={<Lightbulb size={48} />}
-          title="Nenhuma oportunidade ainda"
-          description="Transforme seus atritos em oportunidades de produto clicando no botão 'Transformar em oportunidade' na página de atritos"
-          action={<Button onClick={() => onNavigate('atritos')}>Ver atritos</Button>}
+          title={hasActiveFilters ? 'Nenhuma oportunidade encontrada' : 'Nenhuma oportunidade ainda'}
+          description={
+            hasActiveFilters
+              ? 'Tente ajustar os filtros ou limpar a busca para ver mais resultados'
+              : 'Transforme seus atritos em oportunidades de produto clicando no botão "Transformar em oportunidade" na página de atritos'
+          }
+          action={
+            hasActiveFilters ? (
+              <Button variant="secondary" onClick={clearFilters}>
+                <X size={18} />
+                Limpar filtros
+              </Button>
+            ) : (
+              <Button onClick={() => onNavigate('atritos')}>Ver atritos</Button>
+            )
+          }
         />
       ) : (
         <div className="space-y-3">
@@ -157,7 +243,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
                 </div>
                 <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-2">
                   <span className="text-xs text-muted-foreground whitespace-nowrap">
-                    {opportunity.createdAt}
+                    {formatDate(opportunity.createdAt)}
                   </span>
                   <div className="flex gap-2">
                     <button
@@ -168,7 +254,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
                       <Eye size={18} />
                     </button>
                     <button
-                      onClick={() => handleCopyPrompt(opportunity)}
+                      onClick={() => handleShowPrompt(opportunity)}
                       className="text-muted-foreground hover:text-primary transition-colors p-1"
                       title="Gerar prompt"
                     >
@@ -182,11 +268,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
                       <Download size={18} />
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm('Tem certeza que deseja excluir esta oportunidade?')) {
-                          deleteOpportunity(opportunity.id);
-                        }
-                      }}
+                      onClick={() => handleDeleteOpportunity(opportunity)}
                       className="text-muted-foreground hover:text-destructive transition-colors p-1"
                       title="Excluir"
                     >
@@ -200,6 +282,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
         </div>
       )}
 
+      {/* Modal de detalhes */}
       <Modal
         isOpen={!!selectedOpportunity}
         onClose={() => setSelectedOpportunity(null)}
@@ -208,7 +291,7 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
         {selectedOpportunity && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-display mb-2">{selectedOpportunity.title}</h3>
+              <h3 className="text-xl mb-2">{selectedOpportunity.title}</h3>
             </div>
 
             <div>
@@ -231,17 +314,17 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Prioridade</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {(['baixa', 'média', 'alta'] as Priority[]).map((priority) => (
+                  {PRIORITY_OPTIONS.map((opt) => (
                     <button
-                      key={priority}
-                      onClick={() => handleChangePriority(selectedOpportunity, priority)}
+                      key={opt.value}
+                      onClick={() => handleChangePriority(selectedOpportunity, opt.value)}
                       className={`px-3 py-1 rounded text-sm transition-all ${
-                        selectedOpportunity.priority === priority
+                        selectedOpportunity.priority === opt.value
                           ? 'bg-primary text-primary-foreground'
                           : 'bg-muted text-muted-foreground hover:bg-muted/80'
                       }`}
                     >
-                      {priority}
+                      {opt.label}
                     </button>
                   ))}
                 </div>
@@ -281,18 +364,11 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
               <Select
                 value={selectedOpportunity.status}
                 onChange={(e) => {
-                  updateOpportunity(selectedOpportunity.id, {
-                    status: e.target.value as any
-                  });
-                  setSelectedOpportunity({ ...selectedOpportunity, status: e.target.value as any });
+                  const val = e.target.value as Opportunity['status'];
+                  updateOpportunity(selectedOpportunity.id, { status: val });
+                  setSelectedOpportunity({ ...selectedOpportunity, status: val });
                 }}
-                options={[
-                  { value: 'ideia', label: 'Ideia' },
-                  { value: 'validando', label: 'Validando' },
-                  { value: 'protótipo', label: 'Protótipo' },
-                  { value: 'em desenvolvimento', label: 'Em desenvolvimento' },
-                  { value: 'arquivada', label: 'Arquivada' }
-                ]}
+                options={OPPORTUNITY_STATUS_OPTIONS}
               />
             </div>
 
@@ -307,9 +383,38 @@ export function Oportunidades({ onNavigate }: OportunidadesProps) {
                   Exportar .md
                 </Button>
               </div>
-              <Button onClick={() => handleCopyPrompt(selectedOpportunity)}>
+              <Button onClick={() => handleShowPrompt(selectedOpportunity)}>
                 <FileCode size={18} />
                 Gerar prompt
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Modal de prompt */}
+      <Modal
+        isOpen={!!promptModalOpportunity}
+        onClose={() => setPromptModalOpportunity(null)}
+        title="Prompt para IA"
+      >
+        {promptModalOpportunity && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Copie o prompt abaixo e cole no seu assistente de IA preferido para refinar a oportunidade.
+            </p>
+            <div className="bg-muted rounded-lg p-4 max-h-[50vh] overflow-y-auto">
+              <pre className="text-xs whitespace-pre-wrap font-mono text-foreground">
+                {generatePrompt(promptModalOpportunity)}
+              </pre>
+            </div>
+            <div className="flex justify-end gap-3">
+              <Button variant="secondary" onClick={() => setPromptModalOpportunity(null)}>
+                Fechar
+              </Button>
+              <Button onClick={handleCopyPrompt}>
+                <Copy size={18} />
+                Copiar prompt
               </Button>
             </div>
           </div>

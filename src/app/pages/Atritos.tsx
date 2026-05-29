@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy, ArrowUpDown } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
@@ -12,6 +12,15 @@ import { Atrito, AtritoStatus } from '../types';
 import { generateOpportunityFromAtrito } from '../utils/opportunityGenerator';
 import { exportAtritoToMarkdown, downloadMarkdown, copyToClipboard } from '../utils/markdown';
 import { loadFilters, saveFilters, FiltersState } from '../utils/storage';
+import { formatDate } from '../utils/date';
+import {
+  CONTEXT_OPTIONS,
+  INTENSITY_OPTIONS,
+  FREQUENCY_OPTIONS,
+  ATRITO_STATUS_OPTIONS,
+} from '../constants';
+import { showConfirm } from '../components/ConfirmDialog';
+import { showToast } from '../components/Toast';
 
 interface AtritosProps {
   onNavigate: (page: string) => void;
@@ -26,7 +35,7 @@ const defaultFilters: FiltersState = {
 };
 
 export function Atritos({ onNavigate }: AtritosProps) {
-  const { atritos, deleteAtrito, updateAtrito, addOpportunity } = useApp();
+  const { atritos, opportunities, deleteAtrito, updateAtrito, addOpportunity } = useApp();
   const [filters, setFilters] = useState<FiltersState>(() => loadFilters());
   const [selectedAtrito, setSelectedAtrito] = useState<Atrito | null>(null);
 
@@ -35,9 +44,12 @@ export function Atritos({ onNavigate }: AtritosProps) {
   }, [filters]);
 
   const filteredAtritos = atritos.filter((atrito) => {
+    const term = filters.searchTerm.toLowerCase();
     const matchesSearch =
-      atrito.title.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-      atrito.description.toLowerCase().includes(filters.searchTerm.toLowerCase());
+      !term ||
+      atrito.title.toLowerCase().includes(term) ||
+      atrito.description.toLowerCase().includes(term) ||
+      (atrito.improvisedSolution && atrito.improvisedSolution.toLowerCase().includes(term));
     const matchesContext = !filters.contextFilter || atrito.context === filters.contextFilter;
     const matchesIntensity = !filters.intensityFilter || atrito.intensity === filters.intensityFilter;
     const matchesFrequency = !filters.frequencyFilter || atrito.frequency === filters.frequencyFilter;
@@ -50,13 +62,26 @@ export function Atritos({ onNavigate }: AtritosProps) {
     setFilters(defaultFilters);
   };
 
-  const hasActiveFilters = filters.searchTerm || filters.contextFilter || filters.intensityFilter || filters.frequencyFilter || filters.statusFilter;
+  const hasActiveFilters =
+    filters.searchTerm ||
+    filters.contextFilter ||
+    filters.intensityFilter ||
+    filters.frequencyFilter ||
+    filters.statusFilter;
 
   const handleTransformToOpportunity = (atrito: Atrito) => {
+    const existingOpportunity = opportunities.find((opp) => opp.atritos.includes(atrito.id));
+    if (existingOpportunity) {
+      showToast('Este atrito já foi transformado em oportunidade.', 'info');
+      onNavigate('oportunidades');
+      return;
+    }
+
     const newOpportunity = generateOpportunityFromAtrito(atrito);
     addOpportunity(newOpportunity);
     updateAtrito(atrito.id, { status: 'virou ideia' });
     setSelectedAtrito(null);
+    showToast('Oportunidade criada com sucesso!');
     onNavigate('oportunidades');
   };
 
@@ -70,13 +95,27 @@ export function Atritos({ onNavigate }: AtritosProps) {
   const handleExportAtrito = (atrito: Atrito) => {
     const markdown = exportAtritoToMarkdown(atrito);
     downloadMarkdown(markdown, `atrito-${atrito.id}.md`);
+    showToast('Arquivo Markdown baixado!');
   };
 
   const handleCopyAtrito = async (atrito: Atrito) => {
     const markdown = exportAtritoToMarkdown(atrito);
     const success = await copyToClipboard(markdown);
     if (success) {
-      alert('Atrito copiado para área de transferência!');
+      showToast('Atrito copiado para a área de transferência!');
+    }
+  };
+
+  const handleDeleteAtrito = async (atrito: Atrito) => {
+    const confirmed = await showConfirm({
+      title: 'Excluir atrito',
+      message: `Tem certeza que deseja excluir "${atrito.title}"? Esta ação não pode ser desfeita.`,
+      confirmLabel: 'Excluir',
+    });
+    if (confirmed) {
+      deleteAtrito(atrito.id);
+      setSelectedAtrito(null);
+      showToast('Atrito excluído.');
     }
   };
 
@@ -132,55 +171,28 @@ export function Atritos({ onNavigate }: AtritosProps) {
             value={filters.contextFilter}
             onChange={(e) => setFilters({ ...filters, contextFilter: e.target.value })}
             placeholder="Contexto"
-            options={[
-              { value: '', label: 'Todos os contextos' },
-              { value: 'casa', label: 'Casa' },
-              { value: 'rua', label: 'Rua' },
-              { value: 'faculdade', label: 'Faculdade' },
-              { value: 'trabalho', label: 'Trabalho' },
-              { value: 'transporte', label: 'Transporte' },
-              { value: 'app/site', label: 'App/Site' },
-              { value: 'compra', label: 'Compra' },
-              { value: 'atendimento', label: 'Atendimento' },
-              { value: 'outro', label: 'Outro' }
-            ]}
+            options={[{ value: '', label: 'Todos os contextos' }, ...CONTEXT_OPTIONS]}
           />
 
           <Select
             value={filters.intensityFilter}
             onChange={(e) => setFilters({ ...filters, intensityFilter: e.target.value })}
             placeholder="Intensidade"
-            options={[
-              { value: '', label: 'Todas intensidades' },
-              { value: 'baixa', label: 'Baixa' },
-              { value: 'média', label: 'Média' },
-              { value: 'alta', label: 'Alta' }
-            ]}
+            options={[{ value: '', label: 'Todas intensidades' }, ...INTENSITY_OPTIONS]}
           />
 
           <Select
             value={filters.frequencyFilter}
             onChange={(e) => setFilters({ ...filters, frequencyFilter: e.target.value })}
             placeholder="Frequência"
-            options={[
-              { value: '', label: 'Todas frequências' },
-              { value: 'uma vez', label: 'Uma vez' },
-              { value: 'às vezes', label: 'Às vezes' },
-              { value: 'frequentemente', label: 'Frequentemente' }
-            ]}
+            options={[{ value: '', label: 'Todas frequências' }, ...FREQUENCY_OPTIONS]}
           />
 
           <Select
             value={filters.statusFilter}
             onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
             placeholder="Status"
-            options={[
-              { value: '', label: 'Todos os status' },
-              { value: 'observado', label: 'Observado' },
-              { value: 'investigando', label: 'Investigando' },
-              { value: 'virou ideia', label: 'Virou ideia' },
-              { value: 'descartado', label: 'Descartado' }
-            ]}
+            options={[{ value: '', label: 'Todos os status' }, ...ATRITO_STATUS_OPTIONS]}
           />
         </div>
       </div>
@@ -191,11 +203,16 @@ export function Atritos({ onNavigate }: AtritosProps) {
           title="Nenhum atrito encontrado"
           description={
             hasActiveFilters
-              ? 'Tente ajustar os filtros para ver mais resultados'
+              ? 'Tente ajustar os filtros ou limpar a busca para ver mais resultados'
               : 'Comece registrando seu primeiro atrito'
           }
           action={
-            !hasActiveFilters && (
+            hasActiveFilters ? (
+              <Button variant="secondary" onClick={clearFilters}>
+                <X size={18} />
+                Limpar filtros
+              </Button>
+            ) : (
               <Button onClick={() => onNavigate('novo-atrito')}>
                 <Plus size={20} />
                 Registrar primeiro atrito
@@ -221,7 +238,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
                   </div>
                 </div>
                 <div className="flex md:flex-col items-center md:items-end justify-between md:justify-start gap-2">
-                  <span className="text-xs text-muted-foreground whitespace-nowrap">{atrito.createdAt}</span>
+                  <span className="text-xs text-muted-foreground whitespace-nowrap">{formatDate(atrito.createdAt)}</span>
                   <div className="flex gap-2">
                     <button
                       onClick={() => setSelectedAtrito(atrito)}
@@ -246,11 +263,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
                       <Download size={18} />
                     </button>
                     <button
-                      onClick={() => {
-                        if (confirm('Tem certeza que deseja excluir este atrito?')) {
-                          deleteAtrito(atrito.id);
-                        }
-                      }}
+                      onClick={() => handleDeleteAtrito(atrito)}
                       className="text-muted-foreground hover:text-destructive transition-colors p-1"
                       title="Excluir"
                     >
@@ -268,7 +281,7 @@ export function Atritos({ onNavigate }: AtritosProps) {
         {selectedAtrito && (
           <div className="space-y-6">
             <div>
-              <h3 className="text-xl font-display mb-2">{selectedAtrito.title}</h3>
+              <h3 className="text-xl mb-2">{selectedAtrito.title}</h3>
               <p className="text-muted-foreground">{selectedAtrito.description}</p>
             </div>
 
@@ -301,17 +314,17 @@ export function Atritos({ onNavigate }: AtritosProps) {
             <div>
               <p className="text-sm text-muted-foreground mb-2">Status</p>
               <div className="flex flex-wrap gap-2">
-                {(['observado', 'investigando', 'virou ideia', 'descartado'] as AtritoStatus[]).map((status) => (
+                {ATRITO_STATUS_OPTIONS.map((opt) => (
                   <button
-                    key={status}
-                    onClick={() => handleChangeStatus(selectedAtrito, status)}
+                    key={opt.value}
+                    onClick={() => handleChangeStatus(selectedAtrito, opt.value)}
                     className={`px-3 py-1.5 rounded text-sm transition-all ${
-                      selectedAtrito.status === status
+                      selectedAtrito.status === opt.value
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-muted text-muted-foreground hover:bg-muted/80'
                     }`}
                   >
-                    {status}
+                    {opt.label}
                   </button>
                 ))}
               </div>

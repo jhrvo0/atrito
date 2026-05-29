@@ -1,8 +1,8 @@
-import React from 'react';
 import { Plus, FileText, Lightbulb, MapPin, AlertTriangle } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { useApp } from '../context/AppContext';
+import { formatDate } from '../utils/date';
 
 interface InicioProps {
   onNavigate: (page: string) => void;
@@ -28,26 +28,26 @@ export function Inicio({ onNavigate }: InicioProps) {
       label: 'Total de Atritos',
       value: atritos.length,
       icon: FileText,
-      color: 'text-blue-600'
+      color: 'text-blue-600',
     },
     {
       label: 'Oportunidades',
       value: opportunities.length,
       icon: Lightbulb,
-      color: 'text-green-600'
+      color: 'text-green-600',
     },
     {
       label: 'Contexto Recorrente',
       value: mostCommonContext.charAt(0).toUpperCase() + mostCommonContext.slice(1),
       icon: MapPin,
-      color: 'text-purple-600'
+      color: 'text-purple-600',
     },
     {
       label: 'Alta Intensidade',
       value: highIntensityCount,
       icon: AlertTriangle,
-      color: 'text-orange-600'
-    }
+      color: 'text-orange-600',
+    },
   ];
 
   const getStatusColor = (status: string) => {
@@ -88,7 +88,7 @@ export function Inicio({ onNavigate }: InicioProps) {
               <div className="flex items-start justify-between">
                 <div>
                   <p className="text-xs md:text-sm text-muted-foreground mb-1">{stat.label}</p>
-                  <p className="text-2xl md:text-3xl font-display">{stat.value}</p>
+                  <p className="text-2xl md:text-3xl">{stat.value}</p>
                 </div>
                 <Icon className={stat.color} size={20} />
               </div>
@@ -99,35 +99,45 @@ export function Inicio({ onNavigate }: InicioProps) {
 
       <div>
         <h2 className="text-2xl mb-4">Atritos Recentes</h2>
-        <div className="space-y-3">
-          {atritos.slice(0, 5).map((atrito) => (
-            <Card key={atrito.id} onClick={() => onNavigate('atritos')} className="p-4 md:p-5">
-              <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium mb-1 text-sm md:text-base">{atrito.title}</h3>
-                  <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">{atrito.description}</p>
+        {atritos.length === 0 ? (
+          <Card className="p-8 text-center">
+            <p className="text-muted-foreground mb-4">Nenhum atrito registrado ainda.</p>
+            <Button onClick={() => onNavigate('novo-atrito')}>
+              <Plus size={20} />
+              Registrar primeiro atrito
+            </Button>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {atritos.slice(0, 5).map((atrito) => (
+              <Card key={atrito.id} onClick={() => onNavigate('atritos')} className="p-4 md:p-5">
+                <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium mb-1 text-sm md:text-base">{atrito.title}</h3>
+                    <p className="text-xs md:text-sm text-muted-foreground line-clamp-1">{atrito.description}</p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground capitalize">{atrito.context}</span>
+                    <span
+                      className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
+                        atrito.intensity === 'alta'
+                          ? 'bg-orange-100 text-orange-700'
+                          : atrito.intensity === 'média'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-gray-100 text-gray-700'
+                      }`}
+                    >
+                      {atrito.intensity}
+                    </span>
+                    <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${getStatusColor(atrito.status)}`}>
+                      {atrito.status}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground capitalize">{atrito.context}</span>
-                  <span
-                    className={`text-xs px-2 py-1 rounded whitespace-nowrap ${
-                      atrito.intensity === 'alta'
-                        ? 'bg-orange-100 text-orange-700'
-                        : atrito.intensity === 'média'
-                          ? 'bg-yellow-100 text-yellow-700'
-                          : 'bg-gray-100 text-gray-700'
-                    }`}
-                  >
-                    {atrito.intensity}
-                  </span>
-                  <span className={`text-xs px-2 py-1 rounded whitespace-nowrap ${getStatusColor(atrito.status)}`}>
-                    {atrito.status}
-                  </span>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

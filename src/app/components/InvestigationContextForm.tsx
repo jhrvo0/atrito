@@ -169,6 +169,7 @@ export function InvestigationContextForm({
   };
 
   const step = steps[currentStep];
+  if (!step) return null;
   const isFirstStep = currentStep === 0;
   const isLastStep = currentStep === steps.length - 1;
 

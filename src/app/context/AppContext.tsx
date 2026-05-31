@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { Atrito, Opportunity, AtritoInvestigationContext } from '../types';
 import {
   loadAtritos,

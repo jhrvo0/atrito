@@ -40,49 +40,65 @@ npm run build
 
 O resultado estará na pasta `dist/`.
 
+## Scripts de Qualidade
+
+```bash
+npm run typecheck   # Verificação de tipos TypeScript
+npm run check       # Alias para typecheck
+```
+
 ## Estrutura do Projeto
 
 ```
 src/
 ├── app/
 │   ├── components/
-│   │   ├── Button.tsx          - Botão com variantes
-│   │   ├── Card.tsx            - Container de conteúdo
-│   │   ├── ConfirmDialog.tsx   - Modal de confirmação
-│   │   ├── EmptyState.tsx      - Estado vazio
-│   │   ├── Input.tsx           - Campo de texto com ícone
+│   │   ├── AtritoCard.tsx           - Card de listagem de atrito
+│   │   ├── AtritoDetailsModal.tsx   - Modal de detalhes com ações
+│   │   ├── AtritoFilters.tsx        - Filtros de busca e filtro
+│   │   ├── BottomNav.tsx            - Navegação inferior mobile
+│   │   ├── BottomSheet.tsx          - Folha inferior mobile
+│   │   ├── BriefingModal.tsx        - Modal de geração de prompt
+│   │   ├── Button.tsx               - Botão com variantes
+│   │   ├── Card.tsx                 - Container de conteúdo
+│   │   ├── ChipSelect.tsx           - Seleção por chips (reutilizável)
+│   │   ├── ConfirmDialog.tsx        - Modal de confirmação
+│   │   ├── DataManagement.tsx       - Gerenciamento de dados
+│   │   ├── EditAtritoModal.tsx      - Modal de edição de atrito
+│   │   ├── EmptyState.tsx           - Estado vazio
+│   │   ├── Input.tsx                - Campo de texto com ícone
 │   │   ├── InvestigationContextForm.tsx - Formulário de aprofundamento
 │   │   ├── InvestigationSummary.tsx     - Resumo do contexto aprofundado
-│   │   ├── Modal.tsx           - Modal genérico
-│   │   ├── MobileNav.tsx       - Navegação mobile
-│   │   ├── Select.tsx          - Seleção dropdown
-│   │   ├── Sidebar.tsx         - Navegação desktop
-│   │   ├── Tag.tsx             - Etiquetas coloridas
-│   │   ├── Textarea.tsx        - Campo de texto multilinha
-│   │   └── Toast.tsx           - Notificações toast
+│   │   ├── MobileNav.tsx            - Navegação mobile
+│   │   ├── Modal.tsx                - Modal genérico
+│   │   ├── Select.tsx               - Seleção dropdown
+│   │   ├── Sidebar.tsx              - Navegação desktop
+│   │   ├── Tag.tsx                  - Etiquetas coloridas
+│   │   ├── Textarea.tsx             - Campo de texto multilinha
+│   │   └── Toast.tsx                - Notificações toast
 │   ├── context/
-│   │   └── AppContext.tsx      - Estado global com persistência
+│   │   └── AppContext.tsx           - Estado global com persistência
 │   ├── pages/
-│   │   ├── Inicio.tsx          - Página inicial com stats
-│   │   ├── Atritos.tsx         - Listagem, busca e filtros
-│   │   ├── NovoAtrito.tsx      - Formulário de cadastro
-│   │   ├── Oportunidades.tsx   - Gestão de oportunidades e prompts
-│   │   └── Padroes.tsx         - Análise e padrões
+│   │   ├── Inicio.tsx               - Página inicial com stats
+│   │   ├── Atritos.tsx              - Listagem, busca e filtros
+│   │   ├── NovoAtrito.tsx           - Formulário de cadastro
+│   │   ├── Oportunidades.tsx        - Gestão de oportunidades e prompts
+│   │   └── Padroes.tsx              - Análise e padrões
 │   ├── utils/
-│   │   ├── date.ts             - Utilitários de data (PT-BR)
-│   │   ├── markdown.ts         - Exportação em Markdown
-│   │   ├── opportunityGenerator.ts - Geração de oportunidades
-│   │   ├── promptGenerator.ts  - Geração de prompts para IA
-│   │   ├── promptTemplates.ts  - Templates de prompt
-│   │   └── storage.ts          - Persistência no localStorage
-│   ├── constants.ts            - Opções tipadas e validadores
-│   ├── types.ts                - Tipos TypeScript
-│   └── App.tsx                 - Componente raiz com rotas
+│   │   ├── date.ts                  - Utilitários de data (PT-BR)
+│   │   ├── markdown.ts              - Exportação em Markdown
+│   │   ├── opportunityGenerator.ts  - Geração de oportunidades
+│   │   ├── promptGenerator.ts       - Geração de prompts para IA
+│   │   ├── promptTemplates.ts       - Templates de prompt
+│   │   └── storage.ts               - Persistência no localStorage
+│   ├── constants.ts                 - Opções tipadas e validadores
+│   ├── types.ts                     - Tipos TypeScript
+│   └── App.tsx                      - Componente raiz com rotas
 └── styles/
-    ├── fonts.css               - Fontes (Newsreader + Work Sans)
-    ├── index.css               - Entry point de estilos
-    ├── tailwind.css            - Configuração Tailwind
-    └── theme.css               - Tokens de design
+    ├── fonts.css                    - Fontes (Newsreader + Work Sans)
+    ├── index.css                    - Entry point de estilos
+    ├── tailwind.css                 - Configuração Tailwind
+    └── theme.css                    - Tokens de design
 ```
 
 ## Fluxo Recomendado
@@ -165,4 +181,3 @@ Os dados persistem entre sessões. Para backup, use a funcionalidade de exporta�
 - Exportação em JSON para backup completo
 - Importação de dados
 - Gráficos interativos na página de padrões
-- Modo escuro

@@ -26,18 +26,6 @@ function calculatePriority(intensity: Atrito['intensity'], frequency: Atrito['fr
   return 'média';
 }
 
-const HYPOTHESIS_MAP: Record<Atrito['context'], string> = {
-  'compra': 'Simplificar ou agilizar o processo de compra poderia reduzir a fricção e melhorar a experiência do cliente.',
-  'app/site': 'Reduzir etapas ou tornar o fluxo mais intuitivo poderia diminuir a frustração e aumentar a retenção.',
-  'casa': 'Um objeto, serviço ou adaptação simples poderia eliminar esse incômodo doméstico recorrente.',
-  'faculdade': 'Estudantes enfrentam esse problema com frequência; uma solução leve poderia melhorar o dia a dia acadêmico.',
-  'transporte': 'Resolver essa fricção no deslocamento poderia beneficiar milhares de pessoas que dependem do transporte público.',
-  'trabalho': 'Uma ferramenta ou processo mais eficiente poderia recuperar tempo produtivo e reduzir frustração no trabalho.',
-  'rua': 'Problemas no espaço público afetam muitas pessoas; uma solução escalável poderia melhorar a vivência urbana.',
-  'atendimento': 'Melhorar a experiência de atendimento poderia reduzir filas, reclamações e perda de tempo.',
-  'outro': 'Esse problema merece atenção; uma solução pensada poderia beneficiar diversas pessoas.',
-};
-
 const MVP_MAP: Record<Atrito['frequency'], string> = {
   'uma vez': 'Pesquise se outras pessoas já passaram por isso. Valide se o problema é recorrente antes de construir qualquer coisa.',
   'às vezes': 'Crie um protótipo simples (papel ou digital) para testar se uma solução resolve o problema quando ele aparece.',
@@ -76,7 +64,7 @@ export function generateOpportunityFromAtrito(
         if (investigationContext.emotionalImpact && investigationContext.emotionalImpact !== 'nenhum') {
           parts.push(`e impacto emocional ${investigationContext.emotionalImpact}`);
         }
-        if (parts.length > 0) {
+        if (parts.length > 0 && parts[0]) {
           parts[0] = parts[0].charAt(0).toLowerCase() + parts[0].slice(1);
           return parts.join(', ') + '. Resolver isso poderia melhorar significativamente a experiência.';
         }

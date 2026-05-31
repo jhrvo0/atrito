@@ -4,7 +4,6 @@ import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { DataManagement } from '../components/DataManagement';
 import { useApp } from '../context/AppContext';
-import { formatDate } from '../utils/date';
 
 export function Inicio() {
   const navigate = useNavigate();

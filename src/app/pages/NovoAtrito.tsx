@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowLeft, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
 import { Textarea } from '../components/Textarea';
+import { ChipSelect } from '../components/ChipSelect';
 import { useApp } from '../context/AppContext';
 import { Atrito } from '../types';
 import {
@@ -32,37 +33,6 @@ type FormData = {
   improvisedSolution: string;
 };
 
-function ChipSelect({ options, value, onChange, label }: {
-  options: { value: string; label: string }[];
-  value: string;
-  onChange: (v: string) => void;
-  label?: string;
-  compact?: boolean;
-}) {
-  return (
-    <div>
-      {label && <label className="block text-xs text-muted-foreground mb-2 font-medium">{label}</label>}
-      <div className="flex flex-wrap gap-1.5">
-        {options.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            onClick={() => onChange(opt.value)}
-            className={`inline-flex items-center gap-1.5 px-3 py-2 md:py-1.5 rounded-full text-xs font-medium transition-all duration-150 border min-h-[36px] md:min-h-0 active:scale-95 ${
-              value === opt.value
-                ? 'bg-primary text-primary-foreground border-primary'
-                : 'bg-card text-muted-foreground border-border/60 hover:border-border hover:text-foreground'
-            }`}
-          >
-            {value === opt.value && <Check size={12} strokeWidth={2.5} />}
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 export function NovoAtrito() {
   const navigate = useNavigate();
   const { addAtrito } = useApp();
@@ -84,7 +54,7 @@ export function NovoAtrito() {
 
     const newErrors: string[] = [];
     if (!formData.title.trim()) newErrors.push('Título');
-    if (!formData.context) newErrors.push('Contexto');
+    if (!formData.context && !formData.contextCustom.trim()) newErrors.push('Contexto');
     if (!formData.intensity) newErrors.push('Intensidade');
 
     if (newErrors.length > 0) {

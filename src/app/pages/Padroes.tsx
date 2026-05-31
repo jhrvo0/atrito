@@ -1,4 +1,4 @@
-import { FileText, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
+import { FileText, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -74,7 +74,8 @@ export function Padroes() {
   const maxContextCount = Math.max(...Object.values(contextCounts), 1);
 
   const topContext = sortedContexts[0];
-  const topContextLabel = topContext ? topContext[0] : null;
+  const topContextLabel = topContext?.[0] ?? null;
+  const topContextCount = topContext?.[1] ?? 0;
   const highIntensityCount = intensityCounts['alta'] || 0;
   const frequentCount = frequencyCounts['frequentemente'] || 0;
 
@@ -126,7 +127,7 @@ export function Padroes() {
           {atritos.length > 0 ? (
             <>
               {topContextLabel && (
-                <>Seu contexto mais recorrente é <span className="font-medium text-foreground">{topContextLabel}</span> ({topContext[1]} ocorrências).</>
+                <>Seu contexto mais recorrente é <span className="font-medium text-foreground">{topContextLabel}</span> ({topContextCount} ocorrências).</>
               )}
               {highIntensityCount > 0 && (
                 <> <span className="font-medium text-foreground">{highIntensityCount}</span> {highIntensityCount === 1 ? 'problema foi' : 'problemas foram'} de alta intensidade.</>
@@ -171,9 +172,9 @@ export function Padroes() {
             <div>
               <h3 className="text-sm font-medium mb-1">Sugestões baseadas nos seus padrões</h3>
               <div className="space-y-2">
-                {topContextLabel && contextCounts[topContextLabel] >= 3 && (
+                {topContextLabel && (contextCounts[topContextLabel] ?? 0) >= 3 && (
                   <p className="text-sm text-muted-foreground">
-                    Você registrou <span className="font-medium text-foreground">{contextCounts[topContextLabel]} atritos</span> sobre <span className="font-medium text-foreground">{topContextLabel}</span>. Isso pode indicar um problema recorrente que merece atenção.
+                    Você registrou <span className="font-medium text-foreground">{contextCounts[topContextLabel] ?? 0} atritos</span> sobre <span className="font-medium text-foreground">{topContextLabel}</span>. Isso pode indicar um problema recorrente que merece atenção.
                   </p>
                 )}
                 {highIntensityCount >= 2 && (

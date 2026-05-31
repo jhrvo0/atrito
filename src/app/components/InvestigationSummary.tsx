@@ -1,6 +1,6 @@
 import { AtritoInvestigationContext } from '../types';
 import { Tag } from './Tag';
-import { formatDate, formatLocalDate } from '../utils/date';
+import { formatLocalDate } from '../utils/date';
 import {
   TIMES_OCCURRED_OPTIONS,
   EMOTIONAL_IMPACT_OPTIONS,

@@ -20,55 +20,56 @@ export interface OpportunityFiltersState {
   priorityFilter: string;
 }
 
-export function loadAtritos(): Atrito[] {
+function safeLoadJson<T>(key: string, fallback: T): T {
   try {
-    const data = localStorage.getItem(ATRITOS_KEY);
-    return data ? JSON.parse(data) : [];
+    const data = localStorage.getItem(key);
+    if (!data) return fallback;
+    const parsed = JSON.parse(data);
+    return parsed ?? fallback;
   } catch {
-    return [];
+    console.warn(`Failed to parse localStorage key "${key}", using fallback.`);
+    return fallback;
   }
+}
+
+function safeSaveJson<T>(key: string, value: T): void {
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch {
+    console.warn(`Failed to save to localStorage key "${key}".`);
+  }
+}
+
+export function loadAtritos(): Atrito[] {
+  return safeLoadJson<Atrito[]>(ATRITOS_KEY, []);
 }
 
 export function saveAtritos(atritos: Atrito[]): void {
-  localStorage.setItem(ATRITOS_KEY, JSON.stringify(atritos));
+  safeSaveJson(ATRITOS_KEY, atritos);
 }
 
 export function loadOpportunities(): Opportunity[] {
-  try {
-    const data = localStorage.getItem(OPPORTUNITIES_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
+  return safeLoadJson<Opportunity[]>(OPPORTUNITIES_KEY, []);
 }
 
 export function saveOpportunities(opportunities: Opportunity[]): void {
-  localStorage.setItem(OPPORTUNITIES_KEY, JSON.stringify(opportunities));
+  safeSaveJson(OPPORTUNITIES_KEY, opportunities);
 }
 
+const defaultFilters: FiltersState = {
+  searchTerm: '',
+  contextFilter: '',
+  intensityFilter: '',
+  frequencyFilter: '',
+  statusFilter: '',
+};
+
 export function loadFilters(): FiltersState {
-  try {
-    const data = localStorage.getItem(FILTERS_KEY);
-    return data ? JSON.parse(data) : {
-      searchTerm: '',
-      contextFilter: '',
-      intensityFilter: '',
-      frequencyFilter: '',
-      statusFilter: '',
-    };
-  } catch {
-    return {
-      searchTerm: '',
-      contextFilter: '',
-      intensityFilter: '',
-      frequencyFilter: '',
-      statusFilter: '',
-    };
-  }
+  return safeLoadJson<FiltersState>(FILTERS_KEY, defaultFilters);
 }
 
 export function saveFilters(filters: FiltersState): void {
-  localStorage.setItem(FILTERS_KEY, JSON.stringify(filters));
+  safeSaveJson(FILTERS_KEY, filters);
 }
 
 const defaultOpportunityFilters: OpportunityFiltersState = {
@@ -78,65 +79,27 @@ const defaultOpportunityFilters: OpportunityFiltersState = {
 };
 
 export function loadOpportunityFilters(): OpportunityFiltersState {
-  try {
-    const data = localStorage.getItem(OPPORTUNITY_FILTERS_KEY);
-    return data ? JSON.parse(data) : defaultOpportunityFilters;
-  } catch {
-    return defaultOpportunityFilters;
-  }
+  return safeLoadJson<OpportunityFiltersState>(OPPORTUNITY_FILTERS_KEY, defaultOpportunityFilters);
 }
 
 export function saveOpportunityFilters(filters: OpportunityFiltersState): void {
-  localStorage.setItem(OPPORTUNITY_FILTERS_KEY, JSON.stringify(filters));
+  safeSaveJson(OPPORTUNITY_FILTERS_KEY, filters);
 }
 
 export function loadInvestigationContexts(): AtritoInvestigationContext[] {
-  try {
-    const data = localStorage.getItem(INVESTIGATION_CONTEXTS_KEY);
-    return data ? JSON.parse(data) : [];
-  } catch {
-    return [];
-  }
+  return safeLoadJson<AtritoInvestigationContext[]>(INVESTIGATION_CONTEXTS_KEY, []);
 }
 
 export function saveInvestigationContexts(contexts: AtritoInvestigationContext[]): void {
-  localStorage.setItem(INVESTIGATION_CONTEXTS_KEY, JSON.stringify(contexts));
+  safeSaveJson(INVESTIGATION_CONTEXTS_KEY, contexts);
 }
 
-export function findInvestigationContextByAtritoId(
-  atritoId: string
-): AtritoInvestigationContext | undefined {
-  const contexts = loadInvestigationContexts();
-  return contexts.find((c) => c.atritoId === atritoId);
-}
-
-export function saveOrUpdateInvestigationContext(
-  context: AtritoInvestigationContext
-): void {
-  const contexts = loadInvestigationContexts();
-  const index = contexts.findIndex((c) => c.atritoId === context.atritoId);
-
-  if (index >= 0) {
-    contexts[index] = { ...contexts[index], ...context, updatedAt: new Date().toISOString() };
-  } else {
-    contexts.push(context);
-  }
-
-  saveInvestigationContexts(contexts);
-}
-
-export function removeInvestigationContext(atritoId: string): void {
-  const contexts = loadInvestigationContexts();
-  const filtered = contexts.filter((c) => c.atritoId !== atritoId);
-  saveInvestigationContexts(filtered);
-}
-
-export function hasInvestigationContext(
-  atritoId: string,
-  contexts?: AtritoInvestigationContext[]
-): boolean {
-  const list = contexts ?? loadInvestigationContexts();
-  return list.some((c) => c.atritoId === atritoId);
+export function clearAllData(): void {
+  localStorage.removeItem(ATRITOS_KEY);
+  localStorage.removeItem(OPPORTUNITIES_KEY);
+  localStorage.removeItem(FILTERS_KEY);
+  localStorage.removeItem(OPPORTUNITY_FILTERS_KEY);
+  localStorage.removeItem(INVESTIGATION_CONTEXTS_KEY);
 }
 
 interface BackupData {
@@ -194,12 +157,4 @@ export function importBackup(jsonString: string): { success: boolean; message: s
   } catch {
     return { success: false, message: 'Não foi possível ler o arquivo JSON.' };
   }
-}
-
-export function clearAllData(): void {
-  localStorage.removeItem(ATRITOS_KEY);
-  localStorage.removeItem(OPPORTUNITIES_KEY);
-  localStorage.removeItem(FILTERS_KEY);
-  localStorage.removeItem(OPPORTUNITY_FILTERS_KEY);
-  localStorage.removeItem(INVESTIGATION_CONTEXTS_KEY);
 }

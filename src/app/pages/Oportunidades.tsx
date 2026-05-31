@@ -2,7 +2,6 @@ import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lightbulb, Trash2, FileCode, Download, Copy, FileDown, Search, X, SlidersHorizontal } from 'lucide-react';
 import { Card } from '../components/Card';
-import { Tag } from '../components/Tag';
 import { Modal } from '../components/Modal';
 import { BottomSheet } from '../components/BottomSheet';
 import { Button } from '../components/Button';

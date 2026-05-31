@@ -2,7 +2,7 @@ import { Opportunity, Atrito, AtritoInvestigationContext, PromptTemplateType } f
 import { getTemplateByType } from './promptTemplates';
 
 interface PromptContext {
-  atrito: Atrito;
+  atrito?: Atrito;
   investigationContext?: AtritoInvestigationContext;
   opportunity?: Opportunity;
   templateType: PromptTemplateType;
@@ -328,20 +328,3 @@ export function generatePromptFromAtritoContext({
   });
 }
 
-export function generatePrompt(opportunity: Opportunity): string {
-  return generatePromptFromContext({
-    atrito: {
-      id: '',
-      title: opportunity.title,
-      description: opportunity.originalProblem,
-      context: 'geral',
-      intensity: 'média',
-      frequency: 'às vezes',
-      affected: 'eu',
-      status: 'observado',
-      createdAt: opportunity.createdAt,
-    },
-    opportunity,
-    templateType: 'mvp-definition',
-  });
-}

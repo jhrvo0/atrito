@@ -1,9 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, X, Trash2, FileText, Download, Copy, PenLine, SlidersHorizontal, Sparkles } from 'lucide-react';
+import { Search, Plus, X, Trash2, FileText, Download, Copy, PenLine, SlidersHorizontal, Sparkles, Pencil, Check } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
+import { Textarea } from '../components/Textarea';
 import { Tag } from '../components/Tag';
 import { Select } from '../components/Select';
 import { EmptyState } from '../components/EmptyState';
@@ -17,8 +18,14 @@ import { exportAtritoToMarkdown, downloadMarkdown, copyToClipboard } from '../ut
 import { loadFilters, saveFilters, FiltersState } from '../utils/storage';
 import { formatDate } from '../utils/date';
 import {
+  CONTEXT_OPTIONS,
   INTENSITY_OPTIONS,
   FREQUENCY_OPTIONS,
+  AFFECTED_OPTIONS,
+  isValidContext,
+  isValidIntensity,
+  isValidFrequency,
+  isValidAffected,
   ATRITO_STATUS_OPTIONS,
 } from '../constants';
 import { showConfirm } from '../components/ConfirmDialog';
@@ -67,11 +74,12 @@ function groupByDate(atritos: Atrito[]): { label: string; items: Atrito[] }[] {
 
 export function Atritos() {
   const navigate = useNavigate();
-  const { atritos, opportunities, investigationContexts, deleteAtrito, deleteOpportunity, updateAtrito, addInvestigationContext } = useApp();
+  const { atritos, opportunities, investigationContexts, deleteAtrito, deleteOpportunity, updateAtrito, addInvestigationContext, deleteInvestigationContext } = useApp();
   const [filters, setFilters] = useState<FiltersState>(() => loadFilters());
   const [selectedAtrito, setSelectedAtrito] = useState<Atrito | null>(null);
   const [showInvestigationForm, setShowInvestigationForm] = useState(false);
   const [showFilterSheet, setShowFilterSheet] = useState(false);
+  const [editingAtrito, setEditingAtrito] = useState<Atrito | null>(null);
 
   const getContextForAtrito = (atritoId: string) => {
     return investigationContexts.find((c) => c.atritoId === atritoId);
@@ -195,6 +203,20 @@ export function Atritos() {
     deleteAtrito(atrito.id);
     setSelectedAtrito(null);
     showToast('Observação excluída.');
+  };
+
+  const handleDeleteInvestigationContext = async (atrito: Atrito) => {
+    const context = getContextForAtrito(atrito.id);
+    if (!context) return;
+    const confirmed = await showConfirm({
+      title: 'Excluir contexto aprofundado',
+      message: 'Tem certeza que deseja excluir o contexto aprofundado? Esta ação não pode ser desfeita.',
+      confirmLabel: 'Excluir',
+    });
+    if (!confirmed) return;
+    deleteInvestigationContext(context.id);
+    setSelectedAtrito({ ...atrito });
+    showToast('Contexto aprofundado excluído.');
   };
 
   const getStatusColor = (status: string) => {
@@ -454,6 +476,14 @@ export function Atritos() {
 
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border/50 gap-3">
               <div className="flex gap-1.5 flex-wrap">
+                <Button variant="secondary" size="sm" onClick={() => setEditingAtrito(selectedAtrito)}>
+                  <Pencil size={14} />
+                  Editar
+                </Button>
+                <Button variant="secondary" size="sm" onClick={() => setShowInvestigationForm(true)}>
+                  <PenLine size={14} />
+                  Aprofundar
+                </Button>
                 <Button variant="secondary" size="sm" onClick={() => handleCopyAtrito(selectedAtrito)}>
                   <Copy size={14} />
                   Copiar
@@ -461,10 +491,6 @@ export function Atritos() {
                 <Button variant="secondary" size="sm" onClick={() => handleExportAtrito(selectedAtrito)}>
                   <Download size={14} />
                   Exportar
-                </Button>
-                <Button variant="secondary" size="sm" onClick={() => setShowInvestigationForm(true)}>
-                  <PenLine size={14} />
-                  Aprofundar
                 </Button>
               </div>
               <div className="flex flex-col items-end gap-1">
@@ -481,6 +507,18 @@ export function Atritos() {
                   Gerar briefing para IA
                 </Button>
               </div>
+            </div>
+
+            <div className="pt-3 border-t border-border/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteAtrito(selectedAtrito)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full justify-center"
+              >
+                <Trash2 size={14} />
+                Excluir observação
+              </Button>
             </div>
           </div>
         )}
@@ -574,6 +612,221 @@ export function Atritos() {
           }}
         />
       )}
+
+      {editingAtrito && (
+        <EditAtritoModal
+          atrito={editingAtrito}
+          isOpen={!!editingAtrito}
+          onClose={() => setEditingAtrito(null)}
+          onSave={(updates) => {
+            updateAtrito(editingAtrito.id, updates);
+            setSelectedAtrito({ ...editingAtrito, ...updates });
+            setEditingAtrito(null);
+            showToast('Observação atualizada!');
+          }}
+          onDeleteContext={() => handleDeleteInvestigationContext(editingAtrito)}
+          hasContext={!!getContextForAtrito(editingAtrito.id)}
+        />
+      )}
     </div>
+  );
+}
+
+type EditFormData = {
+  title: string;
+  description: string;
+  context: string;
+  intensity: string;
+  frequency: string;
+  affected: string;
+  improvisedSolution: string;
+};
+
+function ChipSelect({ options, value, onChange, label }: {
+  options: { value: string; label: string }[];
+  value: string;
+  onChange: (v: string) => void;
+  label?: string;
+}) {
+  return (
+    <div>
+      {label && <label className="block text-xs text-muted-foreground mb-2 font-medium">{label}</label>}
+      <div className="flex flex-wrap gap-1.5">
+        {options.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            onClick={() => onChange(opt.value)}
+            className={`inline-flex items-center gap-1.5 px-3 py-2 md:py-1.5 rounded-full text-xs font-medium transition-all duration-150 border min-h-[36px] md:min-h-0 active:scale-95 ${
+              value === opt.value
+                ? 'bg-primary text-primary-foreground border-primary'
+                : 'bg-card text-muted-foreground border-border/60 hover:border-border hover:text-foreground'
+            }`}
+          >
+            {value === opt.value && <Check size={12} strokeWidth={2.5} />}
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function EditAtritoModal({
+  atrito,
+  isOpen,
+  onClose,
+  onSave,
+  onDeleteContext,
+  hasContext,
+}: {
+  atrito: Atrito;
+  isOpen: boolean;
+  onClose: () => void;
+  onSave: (updates: Partial<Atrito>) => void;
+  onDeleteContext: () => void;
+  hasContext: boolean;
+}) {
+  const [formData, setFormData] = useState<EditFormData>({
+    title: atrito.title,
+    description: atrito.description || '',
+    context: atrito.context,
+    intensity: atrito.intensity,
+    frequency: atrito.frequency,
+    affected: atrito.affected,
+    improvisedSolution: atrito.improvisedSolution || '',
+  });
+  const [errors, setErrors] = useState<string[]>([]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newErrors: string[] = [];
+    if (!formData.title.trim()) newErrors.push('Título');
+    if (!formData.context) newErrors.push('Contexto');
+    if (!formData.intensity) newErrors.push('Intensidade');
+    if (newErrors.length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    setErrors([]);
+    onSave({
+      title: formData.title.trim(),
+      description: formData.description.trim(),
+      context: isValidContext(formData.context) ? formData.context : 'outro',
+      intensity: isValidIntensity(formData.intensity) ? formData.intensity : 'média',
+      frequency: isValidFrequency(formData.frequency) ? formData.frequency : 'às vezes',
+      affected: isValidAffected(formData.affected) ? formData.affected : 'eu',
+      improvisedSolution: formData.improvisedSolution.trim() || undefined,
+    });
+  };
+
+  return (
+    <BottomSheet isOpen={isOpen} onClose={onClose} title="Editar observação">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {errors.length > 0 && (
+          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive">
+            Campos obrigatórios: {errors.join(', ')}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">
+            Título <span className="text-destructive">*</span>
+          </label>
+          <Input
+            placeholder="O que aconteceu?"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+            className="min-h-[44px]"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">Descrição</label>
+          <Textarea
+            placeholder="Descreva o que aconteceu..."
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+            rows={3}
+            className="min-h-[44px]"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">
+            Contexto <span className="text-destructive">*</span>
+          </label>
+          <ChipSelect
+            options={CONTEXT_OPTIONS}
+            value={formData.context}
+            onChange={(v) => setFormData({ ...formData, context: v })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">
+            Intensidade <span className="text-destructive">*</span>
+          </label>
+          <ChipSelect
+            options={INTENSITY_OPTIONS}
+            value={formData.intensity}
+            onChange={(v) => setFormData({ ...formData, intensity: v })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">Frequência</label>
+          <ChipSelect
+            options={FREQUENCY_OPTIONS}
+            value={formData.frequency}
+            onChange={(v) => setFormData({ ...formData, frequency: v })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">Quem foi afetado?</label>
+          <ChipSelect
+            options={AFFECTED_OPTIONS}
+            value={formData.affected}
+            onChange={(v) => setFormData({ ...formData, affected: v })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">Solução improvisada</label>
+          <Textarea
+            placeholder="Como você contornou esse problema?"
+            value={formData.improvisedSolution}
+            onChange={(e) => setFormData({ ...formData, improvisedSolution: e.target.value })}
+            rows={2}
+            className="min-h-[44px]"
+          />
+        </div>
+
+        {hasContext && (
+          <div className="pt-2 border-t border-border/50">
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={onDeleteContext}
+              className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full justify-center"
+            >
+              <Trash2 size={14} />
+              Excluir contexto aprofundado
+            </Button>
+          </div>
+        )}
+
+        <div className="flex gap-3 pt-2">
+          <Button type="button" variant="ghost" onClick={onClose} className="flex-1 min-h-[48px]">
+            Cancelar
+          </Button>
+          <Button type="submit" className="flex-1 min-h-[48px]">
+            Salvar
+          </Button>
+        </div>
+      </form>
+    </BottomSheet>
   );
 }

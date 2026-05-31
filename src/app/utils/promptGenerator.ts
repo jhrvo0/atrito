@@ -328,8 +328,6 @@ export function generatePromptFromAtritoContext({
   });
 }
 
-// Fallback legado: cria um Atrito sintético a partir de uma Opportunity
-// para manter compatibilidade com chamadas antigas que passam apenas uma oportunidade.
 export function generatePrompt(opportunity: Opportunity): string {
   return generatePromptFromContext({
     atrito: {

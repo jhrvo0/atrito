@@ -433,6 +433,18 @@ export function Ideias() {
                 Gerar prompt
               </Button>
             </div>
+
+            <div className="pt-3 border-t border-border/50">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => handleDeleteOpportunity(selectedOpportunity)}
+                className="text-destructive hover:text-destructive hover:bg-destructive/10 w-full justify-center"
+              >
+                <Trash2 size={14} />
+                Excluir ideia
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

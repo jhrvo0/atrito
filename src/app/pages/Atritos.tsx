@@ -202,6 +202,8 @@ export function Atritos() {
 
     deleteAtrito(atrito.id);
     setSelectedAtrito(null);
+    setEditingAtrito(null);
+    setShowBriefingModal(false);
     showToast('Observação excluída.');
   };
 
@@ -216,6 +218,7 @@ export function Atritos() {
     if (!confirmed) return;
     deleteInvestigationContext(context.id);
     setSelectedAtrito({ ...atrito });
+    setEditingAtrito({ ...atrito });
     showToast('Contexto aprofundado excluído.');
   };
 
@@ -474,7 +477,7 @@ export function Atritos() {
               return null;
             })()}
 
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-4 border-t border-border/50 gap-3">
+            <div className="pt-4 border-t border-border/50 space-y-3">
               <div className="flex gap-1.5 flex-wrap">
                 <Button variant="secondary" size="sm" onClick={() => setEditingAtrito(selectedAtrito)}>
                   <Pencil size={14} />
@@ -493,20 +496,19 @@ export function Atritos() {
                   Exportar
                 </Button>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                {!getContextForAtrito(selectedAtrito.id) && selectedAtrito.status !== 'virou ideia' && (
-                  <p className="text-[11px] text-muted-foreground text-right max-w-[220px] hidden md:block">
-                    Aprofundar o contexto antes de gerar o briefing tende a tornar o prompt mais preciso.
-                  </p>
-                )}
-                <Button
-                  size="sm"
-                  onClick={() => handleOpenBriefingModal(selectedAtrito)}
-                >
-                  <Sparkles size={14} />
-                  Gerar briefing para IA
-                </Button>
-              </div>
+              {!getContextForAtrito(selectedAtrito.id) && selectedAtrito.status !== 'virou ideia' && (
+                <p className="text-[11px] text-muted-foreground hidden md:block">
+                  Aprofundar o contexto antes de gerar o briefing tende a tornar o prompt mais preciso.
+                </p>
+              )}
+              <Button
+                size="sm"
+                onClick={() => handleOpenBriefingModal(selectedAtrito)}
+                className="w-full"
+              >
+                <Sparkles size={14} />
+                Gerar briefing para IA
+              </Button>
             </div>
 
             <div className="pt-3 border-t border-border/50">
@@ -698,6 +700,19 @@ function EditAtritoModal({
   });
   const [errors, setErrors] = useState<string[]>([]);
 
+  useEffect(() => {
+    setFormData({
+      title: atrito.title,
+      description: atrito.description || '',
+      context: atrito.context,
+      intensity: atrito.intensity,
+      frequency: atrito.frequency,
+      affected: atrito.affected,
+      improvisedSolution: atrito.improvisedSolution || '',
+    });
+    setErrors([]);
+  }, [atrito.id]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const newErrors: string[] = [];
@@ -756,11 +771,38 @@ function EditAtritoModal({
           <label className="block text-xs text-muted-foreground mb-2 font-medium">
             Contexto <span className="text-destructive">*</span>
           </label>
-          <ChipSelect
-            options={CONTEXT_OPTIONS}
-            value={formData.context}
-            onChange={(v) => setFormData({ ...formData, context: v })}
-          />
+          {CONTEXT_OPTIONS.some((o) => o.value === formData.context) ? (
+            <ChipSelect
+              options={CONTEXT_OPTIONS}
+              value={formData.context}
+              onChange={(v) => setFormData({ ...formData, context: v })}
+            />
+          ) : (
+            <div className="space-y-2">
+              <Input
+                placeholder="Contexto personalizado"
+                value={formData.context}
+                onChange={(e) => setFormData({ ...formData, context: e.target.value })}
+                className="min-h-[44px]"
+              />
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, context: '' })}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Escolher um contexto padrão
+              </button>
+            </div>
+          )}
+          {CONTEXT_OPTIONS.some((o) => o.value === formData.context) && (
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, context: '' })}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors mt-1.5"
+            >
+              Usar contexto personalizado
+            </button>
+          )}
         </div>
 
         <div>

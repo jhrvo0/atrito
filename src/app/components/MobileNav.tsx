@@ -5,7 +5,7 @@ export function MobileNav() {
   const { theme, toggleTheme } = useApp();
 
   return (
-    <div className="md:hidden fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-b border-border/60 px-4 py-2.5 flex items-center justify-between z-40 safe-area-top">
+    <div className="md:hidden fixed top-0 left-0 right-0 bg-card/95 backdrop-blur-sm border-b border-border/60 px-4 py-2 flex items-center justify-between z-40 safe-area-top">
       <h1 className="text-lg font-display tracking-tight">Atrito</h1>
       <button
         onClick={toggleTheme}

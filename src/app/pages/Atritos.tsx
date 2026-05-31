@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, X, Eye, Lightbulb, Trash2, FileText, Download, Copy, PenLine, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, X, Lightbulb, Trash2, FileText, Download, Copy, PenLine, SlidersHorizontal } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
@@ -16,7 +16,6 @@ import { exportAtritoToMarkdown, downloadMarkdown, copyToClipboard } from '../ut
 import { loadFilters, saveFilters, FiltersState } from '../utils/storage';
 import { formatDate } from '../utils/date';
 import {
-  CONTEXT_OPTIONS,
   INTENSITY_OPTIONS,
   FREQUENCY_OPTIONS,
   ATRITO_STATUS_OPTIONS,
@@ -76,6 +75,9 @@ export function Atritos() {
   const getContextForAtrito = (atritoId: string) => {
     return investigationContexts.find((c) => c.atritoId === atritoId);
   };
+
+  const uniqueContexts = [...new Set(atritos.map((a) => a.context))].sort();
+  const contextOptions = uniqueContexts.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }));
 
   useEffect(() => {
     saveFilters(filters);
@@ -201,7 +203,7 @@ export function Atritos() {
         <Select
           value={filters.contextFilter}
           onChange={(e) => setFilters({ ...filters, contextFilter: e.target.value })}
-          options={[{ value: '', label: 'Contexto' }, ...CONTEXT_OPTIONS]}
+          options={[{ value: '', label: 'Contexto' }, ...contextOptions]}
         />
         <Select
           value={filters.intensityFilter}
@@ -275,7 +277,7 @@ export function Atritos() {
             <Select
               value={filters.contextFilter}
               onChange={(e) => setFilters({ ...filters, contextFilter: e.target.value })}
-              options={[{ value: '', label: 'Contexto' }, ...CONTEXT_OPTIONS]}
+              options={[{ value: '', label: 'Contexto' }, ...contextOptions]}
             />
           </div>
           <div className="w-32">
@@ -337,7 +339,7 @@ export function Atritos() {
               <h3 className="text-xs text-muted-foreground font-medium mb-2 uppercase tracking-wider">{group.label}</h3>
               <div className="space-y-2">
                 {group.items.map((atrito) => (
-                  <Card key={atrito.id} className="py-3 px-4">
+                  <Card key={atrito.id} className="py-3 px-4" onClick={() => setSelectedAtrito(atrito)}>
                     <div className="flex items-start gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2 mb-1">
@@ -355,23 +357,6 @@ export function Atritos() {
                             <Tag variant="investigated">aprofundado</Tag>
                           )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-1 shrink-0">
-                        <button
-                          onClick={() => setSelectedAtrito(atrito)}
-                          className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded hover:bg-muted active:scale-95"
-                          title="Ver detalhes"
-                        >
-                          <Eye size={14} />
-                        </button>
-                        <button
-                          onClick={() => handleTransformToOpportunity(atrito)}
-                          className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded hover:bg-muted active:scale-95 md:hidden"
-                          title="Transformar em oportunidade"
-                          disabled={atrito.status === 'virou ideia'}
-                        >
-                          <Lightbulb size={14} />
-                        </button>
                       </div>
                     </div>
                   </Card>

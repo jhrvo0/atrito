@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Lightbulb, Eye, Trash2, FileCode, Download, Copy, FileDown, Search, X, SlidersHorizontal } from 'lucide-react';
+import { Lightbulb, Trash2, FileCode, Download, Copy, FileDown, Search, X, SlidersHorizontal } from 'lucide-react';
 import { Card } from '../components/Card';
 import { Tag } from '../components/Tag';
 import { Modal } from '../components/Modal';
@@ -299,7 +299,7 @@ export function Oportunidades() {
       ) : (
         <div className="space-y-2">
           {filteredOpportunities.map((opportunity) => (
-            <Card key={opportunity.id} className={`py-3 px-4 border-l-2 ${getPriorityBorder(opportunity.priority)}`}>
+            <Card key={opportunity.id} className={`py-3 px-4 border-l-2 ${getPriorityBorder(opportunity.priority)}`} onClick={() => setSelectedOpportunity(opportunity)}>
               <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2 mb-1">
@@ -320,29 +320,6 @@ export function Oportunidades() {
                       {opportunity.status}
                     </span>
                   </div>
-                </div>
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    onClick={() => setSelectedOpportunity(opportunity)}
-                    className="text-muted-foreground hover:text-foreground transition-colors p-1.5 rounded hover:bg-muted active:scale-95"
-                    title="Ver detalhes"
-                  >
-                    <Eye size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleShowPrompt(opportunity)}
-                    className="text-muted-foreground hover:text-primary transition-colors p-1.5 rounded hover:bg-muted active:scale-95 hidden md:block"
-                    title="Gerar prompt"
-                  >
-                    <FileCode size={14} />
-                  </button>
-                  <button
-                    onClick={() => handleDeleteOpportunity(opportunity)}
-                    className="text-muted-foreground hover:text-destructive transition-colors p-1.5 rounded hover:bg-muted active:scale-95"
-                    title="Excluir"
-                  >
-                    <Trash2 size={14} />
-                  </button>
                 </div>
               </div>
             </Card>

@@ -1,13 +1,4 @@
-export type Context =
-  | 'casa'
-  | 'rua'
-  | 'faculdade'
-  | 'trabalho'
-  | 'transporte'
-  | 'app/site'
-  | 'compra'
-  | 'atendimento'
-  | 'outro';
+export type Context = string;
 
 export type Intensity = 'baixa' | 'média' | 'alta';
 

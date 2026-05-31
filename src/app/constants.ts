@@ -64,7 +64,7 @@ export const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
 ];
 
 export function isValidContext(value: string): value is Context {
-  return CONTEXT_OPTIONS.some((o) => o.value === value);
+  return value.trim().length > 0;
 }
 
 export function isValidIntensity(value: string): value is Intensity {

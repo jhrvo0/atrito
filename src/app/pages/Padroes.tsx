@@ -73,6 +73,11 @@ export function Padroes() {
 
   const maxContextCount = Math.max(...Object.values(contextCounts), 1);
 
+  const topContext = sortedContexts[0];
+  const topContextLabel = topContext ? topContext[0] : null;
+  const highIntensityCount = intensityCounts['alta'] || 0;
+  const frequentCount = frequencyCounts['frequentemente'] || 0;
+
   const statusColors: Record<string, string> = {
     'observado': 'bg-stone-400 dark:bg-stone-500',
     'investigando': 'bg-violet-500',
@@ -116,22 +121,45 @@ export function Padroes() {
         <p className="text-sm text-muted-foreground hidden md:block">Insights emergentes das suas observações.</p>
       </div>
 
+      <div className="mb-5 p-4 bg-accent/30 rounded-lg border border-accent/40 md:hidden">
+        <p className="text-sm leading-relaxed">
+          {atritos.length > 0 ? (
+            <>
+              {topContextLabel && (
+                <>Seu contexto mais recorrente é <span className="font-medium text-foreground">{topContextLabel}</span> ({topContext[1]} ocorrências).</>
+              )}
+              {highIntensityCount > 0 && (
+                <> <span className="font-medium text-foreground">{highIntensityCount}</span> {highIntensityCount === 1 ? 'problema foi' : 'problemas foram'} de alta intensidade.</>
+              )}
+              {frequentCount > 0 && (
+                <> <span className="font-medium text-foreground">{frequentCount}</span> {frequentCount === 1 ? 'ocorre frequentemente' : 'ocorrem frequentemente'}.</>
+              )}
+              {opportunities.length > 0 && (
+                <> {opportunities.length} {opportunities.length === 1 ? 'oportunidade foi gerada' : 'oportunidades foram geradas'} a partir dessas observações.</>
+              )}
+            </>
+          ) : (
+            'Registre algumas observações para ver padrões emergentes.'
+          )}
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-6">
-        <Card className="text-center py-3">
-          <p className="text-2xl font-display">{atritos.length}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">observações</p>
+        <Card className="text-center py-2 md:py-3">
+          <p className="text-xl md:text-2xl font-display">{atritos.length}</p>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">observações</p>
         </Card>
-        <Card className="text-center py-3">
-          <p className="text-2xl font-display">{opportunities.length}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">oportunidades</p>
+        <Card className="text-center py-2 md:py-3">
+          <p className="text-xl md:text-2xl font-display">{opportunities.length}</p>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">oportunidades</p>
         </Card>
-        <Card className="text-center py-3">
-          <p className="text-2xl font-display">{intensityCounts['alta'] || 0}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">alta intensidade</p>
+        <Card className="text-center py-2 md:py-3">
+          <p className="text-xl md:text-2xl font-display">{intensityCounts['alta'] || 0}</p>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">alta intensidade</p>
         </Card>
-        <Card className="text-center py-3">
-          <p className="text-2xl font-display">{frequencyCounts['frequentemente'] || 0}</p>
-          <p className="text-[11px] text-muted-foreground mt-0.5">frequentes</p>
+        <Card className="text-center py-2 md:py-3">
+          <p className="text-xl md:text-2xl font-display">{frequencyCounts['frequentemente'] || 0}</p>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">frequentes</p>
         </Card>
       </div>
 

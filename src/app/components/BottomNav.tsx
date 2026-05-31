@@ -12,7 +12,7 @@ const navItems = [
 export function BottomNav() {
   return (
     <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-card/95 backdrop-blur-sm border-t border-border/60 safe-area-bottom">
-      <div className="flex items-center justify-around h-14 px-1">
+      <div className="flex items-center justify-around h-14 px-1 safe-area-bottom">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -33,17 +33,17 @@ export function BottomNav() {
               {({ isActive }) => (
                 <>
                   {item.isCreate ? (
-                    <div className={`w-10 h-10 -mt-4 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
+                    <div className={`w-11 h-11 -mt-4 rounded-full flex items-center justify-center shadow-lg transition-all duration-200 ${
                       isActive
                         ? 'bg-primary text-primary-foreground scale-110'
                         : 'bg-primary text-primary-foreground active:scale-95'
                     }`}>
-                      <Plus size={20} strokeWidth={2.5} />
+                      <Plus size={22} strokeWidth={2.5} />
                     </div>
                   ) : (
                     <Icon size={20} strokeWidth={isActive ? 2.25 : 1.75} />
                   )}
-                  <span className={`text-[10px] leading-none ${item.isCreate ? 'mt-0.5' : ''}`}>
+                  <span className={`text-[11px] leading-none ${item.isCreate ? 'mt-0.5' : ''}`}>
                     {item.label}
                   </span>
                 </>

@@ -25,6 +25,7 @@ type FormData = {
   title: string;
   description: string;
   context: string;
+  contextCustom: string;
   intensity: string;
   frequency: string;
   affected: string;
@@ -71,6 +72,7 @@ export function NovoAtrito() {
     title: '',
     description: '',
     context: '',
+    contextCustom: '',
     intensity: '',
     frequency: '',
     affected: '',
@@ -92,11 +94,15 @@ export function NovoAtrito() {
 
     setErrors([]);
 
+    const contextValue = formData.context === 'outro' && formData.contextCustom.trim()
+      ? formData.contextCustom.trim()
+      : formData.context;
+
     const newAtrito: Atrito = {
       id: crypto.randomUUID(),
       title: formData.title.trim(),
       description: formData.description.trim(),
-      context: isValidContext(formData.context) ? formData.context : 'outro',
+      context: isValidContext(contextValue) ? contextValue : 'outro',
       intensity: isValidIntensity(formData.intensity) ? formData.intensity : 'média',
       frequency: isValidFrequency(formData.frequency) ? formData.frequency : 'às vezes',
       affected: isValidAffected(formData.affected) ? formData.affected : 'eu',
@@ -115,6 +121,7 @@ export function NovoAtrito() {
       formData.title ||
       formData.description ||
       formData.context ||
+      formData.contextCustom ||
       formData.intensity ||
       formData.frequency ||
       formData.affected ||
@@ -186,8 +193,16 @@ export function NovoAtrito() {
                 <ChipSelect
                   options={CONTEXT_OPTIONS}
                   value={formData.context}
-                  onChange={(v) => setFormData({ ...formData, context: v })}
+                  onChange={(v) => setFormData({ ...formData, context: v, contextCustom: v !== 'outro' ? '' : formData.contextCustom })}
                 />
+                {formData.context === 'outro' && (
+                  <Input
+                    placeholder="Qual?"
+                    value={formData.contextCustom}
+                    onChange={(e) => setFormData({ ...formData, contextCustom: e.target.value })}
+                    className="mt-2 min-h-[44px] md:min-h-0"
+                  />
+                )}
               </div>
 
               <div>
@@ -278,7 +293,7 @@ export function NovoAtrito() {
               </button>
 
               {showDetails && (
-                <Card className="space-y-5 mb-4 animate-in slide-in-from-top duration-200">
+                <Card className="space-y-5 mb-4 animate-in fade-in duration-200">
                   <div>
                     <label className="block text-xs text-muted-foreground mb-2 font-medium">Descrição</label>
                     <Textarea
@@ -321,11 +336,11 @@ export function NovoAtrito() {
                 </Card>
               )}
 
-              <div className="flex gap-3 sticky bottom-16 bg-background pt-3 pb-2 -mx-4 px-4 border-t border-border/50">
-                <Button type="button" variant="ghost" onClick={handleCancel} className="flex-1 min-h-[44px]">
+              <div className="flex gap-3 sticky bottom-16 bg-background/95 backdrop-blur-sm pt-3 pb-3 -mx-4 px-4 border-t border-border/50 z-30 safe-area-bottom">
+                <Button type="button" variant="ghost" onClick={handleCancel} className="flex-1 min-h-[48px]">
                   Cancelar
                 </Button>
-                <Button type="submit" className="flex-1 min-h-[44px]">
+                <Button type="submit" className="flex-1 min-h-[48px]">
                   Salvar
                 </Button>
               </div>

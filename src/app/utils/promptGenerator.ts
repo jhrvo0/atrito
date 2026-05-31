@@ -310,6 +310,24 @@ export function generatePromptFromContext({
   return sections.join('\n');
 }
 
+interface AtritoPromptContext {
+  atrito: Atrito;
+  investigationContext?: AtritoInvestigationContext;
+  templateType: PromptTemplateType;
+}
+
+export function generatePromptFromAtritoContext({
+  atrito,
+  investigationContext,
+  templateType,
+}: AtritoPromptContext): string {
+  return generatePromptFromContext({
+    atrito,
+    investigationContext,
+    templateType,
+  });
+}
+
 export function generatePrompt(opportunity: Opportunity): string {
   return generatePromptFromContext({
     atrito: {

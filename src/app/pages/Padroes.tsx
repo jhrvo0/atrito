@@ -183,7 +183,7 @@ export function Padroes() {
                 )}
                 {frequentCount >= 2 && (
                   <p className="text-sm text-muted-foreground">
-                    <span className="font-medium text-foreground">{frequentCount} problemas</span> ocorrem frequentemente. Padrões assim revelam ideias reais de melhoria.
+                    <span className="font-medium text-foreground">{frequentCount} problemas</span> ocorrem frequentemente. Use esses sinais para gerar um briefing para IA.
                   </p>
                 )}
               </div>

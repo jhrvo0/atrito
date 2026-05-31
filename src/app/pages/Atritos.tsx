@@ -473,12 +473,12 @@ export function Atritos() {
                     Aprofundar o contexto antes de gerar o briefing tende a tornar o prompt mais preciso.
                   </p>
                 )}
-                <Button
+                  <Button
                   size="sm"
                   onClick={() => handleOpenBriefingModal(selectedAtrito)}
                 >
                   <Sparkles size={14} />
-                  Gerar briefing
+                  Gerar briefing para IA
                 </Button>
               </div>
             </div>
@@ -552,11 +552,11 @@ export function Atritos() {
             </Button>
             <Button variant="secondary" size="sm" onClick={handleExportPrompt}>
               <Download size={14} />
-              Exportar
+              Exportar Markdown
             </Button>
             <Button size="sm" onClick={handleCopyPrompt}>
               <Copy size={14} />
-              Copiar
+              Copiar prompt
             </Button>
           </div>
         </div>

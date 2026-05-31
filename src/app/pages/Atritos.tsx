@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, X, Lightbulb, Trash2, FileText, Download, Copy, PenLine, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, X, Trash2, FileText, Download, Copy, PenLine, SlidersHorizontal, Sparkles } from 'lucide-react';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Input } from '../components/Input';
@@ -10,8 +10,9 @@ import { EmptyState } from '../components/EmptyState';
 import { Modal } from '../components/Modal';
 import { BottomSheet } from '../components/BottomSheet';
 import { useApp } from '../context/AppContext';
-import { Atrito, AtritoStatus } from '../types';
-import { generateOpportunityFromAtrito } from '../utils/opportunityGenerator';
+import { Atrito, AtritoStatus, PromptTemplateType } from '../types';
+import { generatePromptFromContext } from '../utils/promptGenerator';
+import { PROMPT_TEMPLATES } from '../utils/promptTemplates';
 import { exportAtritoToMarkdown, downloadMarkdown, copyToClipboard } from '../utils/markdown';
 import { loadFilters, saveFilters, FiltersState } from '../utils/storage';
 import { formatDate } from '../utils/date';
@@ -66,7 +67,7 @@ function groupByDate(atritos: Atrito[]): { label: string; items: Atrito[] }[] {
 
 export function Atritos() {
   const navigate = useNavigate();
-  const { atritos, opportunities, investigationContexts, deleteAtrito, deleteOpportunity, updateAtrito, addOpportunity, addInvestigationContext } = useApp();
+  const { atritos, opportunities, investigationContexts, deleteAtrito, deleteOpportunity, updateAtrito, addInvestigationContext } = useApp();
   const [filters, setFilters] = useState<FiltersState>(() => loadFilters());
   const [selectedAtrito, setSelectedAtrito] = useState<Atrito | null>(null);
   const [showInvestigationForm, setShowInvestigationForm] = useState(false);
@@ -111,19 +112,37 @@ export function Atritos() {
 
   const activeFilterCount = [filters.contextFilter, filters.intensityFilter, filters.frequencyFilter, filters.statusFilter].filter(Boolean).length;
 
-  const handleTransformToOpportunity = (atrito: Atrito) => {
-    const existingOpportunity = opportunities.find((opp) => opp.atritos.includes(atrito.id));
-    if (existingOpportunity) {
-      showToast('Este atrito já foi transformado em ideia.', 'info');
-      return;
-    }
+  const [showBriefingModal, setShowBriefingModal] = useState(false);
+  const [selectedTemplateType, setSelectedTemplateType] = useState<PromptTemplateType>('pain-deepening');
 
-    const context = getContextForAtrito(atrito.id);
-    const newOpportunity = generateOpportunityFromAtrito(atrito, context);
-    addOpportunity(newOpportunity);
-    updateAtrito(atrito.id, { status: 'virou ideia' });
-    setSelectedAtrito(null);
-    showToast('Ideia criada!');
+  const handleOpenBriefingModal = (atrito: Atrito) => {
+    setSelectedAtrito(atrito);
+    setShowBriefingModal(true);
+  };
+
+  const generatedPrompt = useMemo(() => {
+    if (!selectedAtrito) return '';
+    const context = getContextForAtrito(selectedAtrito.id);
+    return generatePromptFromContext({
+      atrito: selectedAtrito,
+      investigationContext: context,
+      templateType: selectedTemplateType,
+    });
+  }, [selectedAtrito, selectedTemplateType, investigationContexts]);
+
+  const handleCopyPrompt = async () => {
+    if (!generatedPrompt) return;
+    const success = await copyToClipboard(generatedPrompt);
+    if (success) {
+      showToast('Prompt copiado!');
+    }
+  };
+
+  const handleExportPrompt = () => {
+    if (!selectedAtrito || !generatedPrompt) return;
+    const filename = `briefing-${selectedTemplateType}-${selectedAtrito.id}.md`;
+    downloadMarkdown(generatedPrompt, filename);
+    showToast('Briefing exportado!');
   };
 
   const handleChangeStatus = (atrito: Atrito, newStatus: AtritoStatus) => {
@@ -309,7 +328,7 @@ export function Atritos() {
           description={
             hasActiveFilters
               ? 'Ajuste os filtros para ver mais resultados.'
-              : 'Comece a notar as fricções do seu dia a dia. Toda boa observação pode virar um produto.'
+              : 'Comece a notar as fricções do seu dia a dia. Toda observação pode revelar um sinal útil.'
           }
           examples={
             !hasActiveFilters
@@ -451,16 +470,15 @@ export function Atritos() {
               <div className="flex flex-col items-end gap-1">
                 {!getContextForAtrito(selectedAtrito.id) && selectedAtrito.status !== 'virou ideia' && (
                   <p className="text-[11px] text-muted-foreground text-right max-w-[220px] hidden md:block">
-                    Aprofundar o contexto antes de transformar tende a gerar prompts melhores.
+                    Aprofundar o contexto antes de gerar o briefing tende a tornar o prompt mais preciso.
                   </p>
                 )}
                 <Button
                   size="sm"
-                  onClick={() => handleTransformToOpportunity(selectedAtrito)}
-                  disabled={selectedAtrito.status === 'virou ideia'}
+                  onClick={() => handleOpenBriefingModal(selectedAtrito)}
                 >
-                  <Lightbulb size={14} />
-                  Transformar em ideia
+                  <Sparkles size={14} />
+                  Gerar briefing
                 </Button>
               </div>
             </div>
@@ -471,6 +489,78 @@ export function Atritos() {
       <BottomSheet isOpen={showFilterSheet} onClose={() => setShowFilterSheet(false)} title="Filtros">
         <FilterContent />
       </BottomSheet>
+
+      <Modal isOpen={showBriefingModal} onClose={() => setShowBriefingModal(false)} title="Briefing para IA">
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            O Atrito não usa IA internamente. Ele apenas organiza suas informações em um prompt para você copiar e usar onde quiser.
+          </p>
+
+          <div>
+            <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Tipo de análise</label>
+            <div className="space-y-3">
+              <div>
+                <p className="text-[11px] text-muted-foreground/60 mb-1.5">Principais</p>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {PROMPT_TEMPLATES.filter((t) => t.category === 'principal').map((t) => (
+                    <button
+                      key={t.type}
+                      onClick={() => setSelectedTemplateType(t.type)}
+                      className={`text-left p-2 rounded-md text-xs transition-all ${
+                        selectedTemplateType === t.type
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      <span className="font-medium">{t.label}</span>
+                      <p className="text-[10px] opacity-70 mt-0.5">{t.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground/60 mb-1.5">Avançados</p>
+                <div className="grid grid-cols-1 gap-1.5">
+                  {PROMPT_TEMPLATES.filter((t) => t.category === 'avançado').map((t) => (
+                    <button
+                      key={t.type}
+                      onClick={() => setSelectedTemplateType(t.type)}
+                      className={`text-left p-2 rounded-md text-xs transition-all ${
+                        selectedTemplateType === t.type
+                          ? 'bg-primary text-primary-foreground'
+                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                      }`}
+                    >
+                      <span className="font-medium">{t.label}</span>
+                      <p className="text-[10px] opacity-70 mt-0.5">{t.description}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-muted/50 rounded-lg p-3 max-h-[40vh] overflow-y-auto">
+            <pre className="text-xs whitespace-pre-wrap font-mono text-foreground/80 leading-relaxed">
+              {generatedPrompt}
+            </pre>
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="secondary" size="sm" onClick={() => setShowBriefingModal(false)}>
+              Fechar
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleExportPrompt}>
+              <Download size={14} />
+              Exportar
+            </Button>
+            <Button size="sm" onClick={handleCopyPrompt}>
+              <Copy size={14} />
+              Copiar
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {selectedAtrito && (
         <InvestigationContextForm

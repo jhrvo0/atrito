@@ -18,7 +18,7 @@ export default function App() {
         <div className="flex min-h-dvh md:h-screen md:overflow-hidden bg-background">
           <MobileNav />
           <Sidebar />
-          <main className="flex-1 overflow-y-auto md:pt-0 pb-20 md:pb-0" style={{ paddingTop: 'calc(2.75rem + env(safe-area-inset-top, 0px))' }}>
+          <main className="flex-1 overflow-y-auto pt-[calc(2.75rem+env(safe-area-inset-top,0px))] md:pt-0 pb-20 md:pb-0">
             <div className="p-4 md:p-6 lg:p-8 animate-in fade-in duration-200">
               <Routes>
                 <Route path="/" element={<Inicio />} />

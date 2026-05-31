@@ -2,9 +2,9 @@ import { Opportunity, Atrito, AtritoInvestigationContext, PromptTemplateType } f
 import { getTemplateByType } from './promptTemplates';
 
 interface PromptContext {
-  opportunity: Opportunity;
-  atrito?: Atrito;
+  atrito: Atrito;
   investigationContext?: AtritoInvestigationContext;
+  opportunity?: Opportunity;
   templateType: PromptTemplateType;
 }
 
@@ -272,9 +272,9 @@ const TEMPLATE_BUILDERS: Record<PromptTemplateType, () => string> = {
 };
 
 export function generatePromptFromContext({
-  opportunity,
   atrito,
   investigationContext,
+  opportunity,
   templateType,
 }: PromptContext): string {
   const template = getTemplateByType(templateType);
@@ -291,23 +291,38 @@ export function generatePromptFromContext({
     buildAtritoSection(atrito),
     '',
     buildInvestigationSection(investigationContext),
-    '',
-    buildOpportunitySection(opportunity),
-    '',
-    '---',
-    '',
-    TEMPLATE_BUILDERS[templateType](),
-    '',
-    '---',
-    '',
-    '*Seja específico. Evite genéricos. Foque em ações concretas e mensuráveis.*',
   ];
+
+  if (opportunity) {
+    sections.push('');
+    sections.push(buildOpportunitySection(opportunity));
+  }
+
+  sections.push('');
+  sections.push('---');
+  sections.push('');
+  sections.push(TEMPLATE_BUILDERS[templateType]());
+  sections.push('');
+  sections.push('---');
+  sections.push('');
+  sections.push('*Seja específico. Evite genéricos. Foque em ações concretas e mensuráveis.*');
 
   return sections.join('\n');
 }
 
 export function generatePrompt(opportunity: Opportunity): string {
   return generatePromptFromContext({
+    atrito: {
+      id: '',
+      title: opportunity.title,
+      description: opportunity.originalProblem,
+      context: 'geral',
+      intensity: 'média',
+      frequency: 'às vezes',
+      affected: 'eu',
+      status: 'observado',
+      createdAt: opportunity.createdAt,
+    },
     opportunity,
     templateType: 'mvp-definition',
   });

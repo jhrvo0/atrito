@@ -221,7 +221,7 @@ export function NovoAtrito() {
               <Card className="space-y-5 mb-4">
                 <div>
                   <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                    Descrição <span className="text-destructive">*</span>
+                    Descrição
                   </label>
                   <Textarea
                     placeholder="Descreva o que aconteceu, o contexto e por que isso foi um problema..."
@@ -267,7 +267,7 @@ export function NovoAtrito() {
                     rows={2}
                   />
                   <p className="text-[11px] text-muted-foreground/60 mt-1.5">
-                    Workarounds revelam ideias reais de produto.
+                    Workarounds revelam sinais úteis de produto.
                   </p>
                 </div>
               </Card>
@@ -370,7 +370,7 @@ export function NovoAtrito() {
 
             <div className="border-t border-border/50 pt-3">
               <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
-                Quanto mais contexto você adicionar, mais útil será para identificar padrões e gerar ideias.
+                Quanto mais contexto você adicionar, mais útil será para identificar padrões e gerar briefings.
               </p>
             </div>
           </div>

@@ -89,4 +89,5 @@ export interface PromptTemplate {
   type: PromptTemplateType;
   label: string;
   description: string;
+  category: 'principal' | 'avançado';
 }

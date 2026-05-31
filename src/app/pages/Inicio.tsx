@@ -21,7 +21,7 @@ export function Inicio() {
         </h1>
         <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-lg leading-relaxed">
           Pequenos incômodos revelam bons produtos. Registre fricções do cotidiano,
-          extraia padrões e transforme observações em ideias.
+          extraia padrões e gere briefings para análise.
         </p>
         <Button onClick={() => navigate('/atritos/novo')} className="min-h-[44px]">
           <Plus size={16} />

@@ -1,11 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Lightbulb, TrendingUp, Sun, Moon } from 'lucide-react';
+import { Home, FileText, TrendingUp, Sun, Moon } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 
 const navItems = [
   { to: '/', label: 'Início', icon: Home },
   { to: '/atritos', label: 'Atritos', icon: FileText },
-  { to: '/oportunidades', label: 'Oportunidades', icon: Lightbulb },
   { to: '/padroes', label: 'Padrões', icon: TrendingUp },
 ];
 

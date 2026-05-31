@@ -267,7 +267,7 @@ export function NovoAtrito() {
                     rows={2}
                   />
                   <p className="text-[11px] text-muted-foreground/60 mt-1.5">
-                    Workarounds revelam oportunidades reais de produto.
+                    Workarounds revelam ideias reais de produto.
                   </p>
                 </div>
               </Card>
@@ -370,7 +370,7 @@ export function NovoAtrito() {
 
             <div className="border-t border-border/50 pt-3">
               <p className="text-[11px] text-muted-foreground/60 leading-relaxed">
-                Quanto mais contexto você adicionar, mais útil será para identificar padrões e gerar oportunidades.
+                Quanto mais contexto você adicionar, mais útil será para identificar padrões e gerar ideias.
               </p>
             </div>
           </div>

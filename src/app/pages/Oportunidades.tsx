@@ -35,7 +35,7 @@ const defaultFilters: OpportunityFiltersState = {
   priorityFilter: '',
 };
 
-export function Oportunidades() {
+export function Ideias() {
   const navigate = useNavigate();
   const { opportunities, atritos, investigationContexts, deleteOpportunity, updateOpportunity } = useApp();
   const [selectedOpportunity, setSelectedOpportunity] = useState<Opportunity | null>(null);
@@ -151,13 +151,13 @@ export function Oportunidades() {
 
   const handleExportOpportunity = (opportunity: Opportunity) => {
     const markdown = exportOpportunityToMarkdown(opportunity, atritos, investigationContexts);
-    downloadMarkdown(markdown, `oportunidade-${opportunity.id}.md`);
+    downloadMarkdown(markdown, `ideia-${opportunity.id}.md`);
     showToast('Markdown baixado!');
   };
 
   const handleExportAll = () => {
     const markdown = exportAllOpportunitiesToMarkdown(filteredOpportunities, atritos, investigationContexts);
-    downloadMarkdown(markdown, 'todas-oportunidades.md');
+    downloadMarkdown(markdown, 'todas-ideias.md');
     showToast('Arquivo baixado!');
   };
 
@@ -178,14 +178,14 @@ export function Oportunidades() {
 
   const handleDeleteOpportunity = async (opportunity: Opportunity) => {
     const confirmed = await showConfirm({
-      title: 'Excluir oportunidade',
-      message: `Tem certeza que deseja excluir "${opportunity.title}"?`,
+        title: 'Excluir ideia',
+        message: `Tem certeza que deseja excluir "${opportunity.title}"?`,
       confirmLabel: 'Excluir',
     });
     if (confirmed) {
       deleteOpportunity(opportunity.id);
       setSelectedOpportunity(null);
-      showToast('Oportunidade excluída.');
+      showToast('Ideia excluída.');
     }
   };
 
@@ -216,8 +216,8 @@ export function Oportunidades() {
     <div className="max-w-3xl mx-auto">
       <div className="flex items-center justify-between gap-4 mb-5">
         <div>
-          <h1 className="text-2xl mb-0.5">Oportunidades</h1>
-          <p className="text-xs text-muted-foreground hidden md:block">Hipóteses de produto nascidas de observações</p>
+          <h1 className="text-2xl mb-0.5">Ideias</h1>
+          <p className="text-xs text-muted-foreground hidden md:block">Desdobramentos úteis a partir das suas observações</p>
         </div>
         {filteredOpportunities.length > 0 && (
           <Button variant="secondary" size="sm" onClick={handleExportAll}>
@@ -277,11 +277,11 @@ export function Oportunidades() {
       {filteredOpportunities.length === 0 ? (
         <EmptyState
           icon={<Lightbulb size={36} />}
-          title={hasActiveFilters ? 'Nenhum resultado' : 'Nenhuma oportunidade ainda'}
+          title={hasActiveFilters ? 'Nenhum resultado' : 'Nenhuma ideia ainda'}
           description={
             hasActiveFilters
               ? 'Ajuste os filtros para ver mais resultados.'
-              : 'Oportunidades nascem a partir de atritos registrados. Transforme uma observação em hipótese de produto.'
+              : 'Ideias surgem a partir de atritos registrados. Transforme uma observação em um desdobramento útil.'
           }
           action={
             hasActiveFilters ? (
@@ -330,7 +330,7 @@ export function Oportunidades() {
       <Modal
         isOpen={!!selectedOpportunity}
         onClose={() => setSelectedOpportunity(null)}
-        title="Oportunidade"
+        title="Ideia"
       >
         {selectedOpportunity && (
           <div className="space-y-5">

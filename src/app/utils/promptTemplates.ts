@@ -28,7 +28,7 @@ export const PROMPT_TEMPLATES: PromptTemplate[] = [
   },
   {
     type: 'opportunity-validation',
-    label: 'Validar oportunidade',
+    label: 'Validar ideia',
     description: 'Avaliar potencial, riscos, formas de validação e próximos passos.',
   },
 ];

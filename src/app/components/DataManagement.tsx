@@ -41,7 +41,7 @@ export function DataManagement({ onDataChanged }: DataManagementProps) {
   const handleClear = async () => {
     const confirmed = await showConfirm({
       title: 'Limpar todos os dados?',
-      message: 'Todos os atritos, oportunidades e contextos serão removidos permanentemente.',
+      message: 'Todos os atritos, ideias e contextos serão removidos permanentemente.',
       confirmLabel: 'Limpar tudo',
     });
     if (!confirmed) return;

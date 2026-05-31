@@ -189,7 +189,7 @@ export function importBackup(jsonString: string): { success: boolean; message: s
 
     return {
       success: true,
-      message: `Backup importado: ${data.atritos.length} atritos, ${data.opportunities.length} oportunidades.`,
+      message: `Backup importado: ${data.atritos.length} atritos, ${data.opportunities.length} ideias.`,
     };
   } catch {
     return { success: false, message: 'Não foi possível ler o arquivo JSON.' };

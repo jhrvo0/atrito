@@ -57,7 +57,7 @@ export function generateOpportunityFromAtrito(
 
   const hypothesis = hasCtx && investigationContext.rootCauseGuess
     ? `A causa raiz parece ser: ${investigationContext.rootCauseGuess}. Uma solução direcionada poderia eliminar a fricção no contexto "${investigationContext.scenario || atrito.context}".`
-    : HYPOTHESIS_MAP[atrito.context] || 'Uma solução pensada poderia resolver esse problema de forma simples e eficiente.';
+    : `Uma solução para "${atrito.title}" poderia eliminar a fricção no contexto de ${atrito.context}.`;
 
   const whyItMatters = hasCtx
     ? (() => {
@@ -104,9 +104,11 @@ export function generateOpportunityFromAtrito(
       )
     : calculatePriority(atrito.intensity, atrito.frequency);
 
+  const title = `Solução para: ${atrito.title}`;
+
   return {
     id: crypto.randomUUID(),
-    title: atrito.title,
+    title,
     originalProblem: atrito.description,
     hypothesis,
     targetAudience: affectedLabel,

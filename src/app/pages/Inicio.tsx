@@ -21,7 +21,7 @@ export function Inicio() {
         </h1>
         <p className="text-sm md:text-base text-muted-foreground mb-6 max-w-lg leading-relaxed">
           Pequenos incômodos revelam bons produtos. Registre fricções do cotidiano,
-          extraia padrões e transforme observações em oportunidades.
+          extraia padrões e transforme observações em ideias.
         </p>
         <Button onClick={() => navigate('/atritos/novo')} className="min-h-[44px]">
           <Plus size={16} />
@@ -36,7 +36,7 @@ export function Inicio() {
         </Card>
         <Card className="text-center py-3 md:py-4">
           <p className="text-xl md:text-2xl font-display">{opportunities.length}</p>
-          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">oportunidades</p>
+          <p className="text-[10px] md:text-xs text-muted-foreground mt-0.5">ideias</p>
         </Card>
         <Card className="text-center py-3 md:py-4">
           <p className="text-xl md:text-2xl font-display">{atritos.filter((a) => a.intensity === 'alta').length}</p>

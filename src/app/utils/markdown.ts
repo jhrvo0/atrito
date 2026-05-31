@@ -128,10 +128,10 @@ export function exportAllOpportunitiesToMarkdown(
   investigationContexts?: AtritoInvestigationContext[]
 ): string {
   const header = [
-    '# Todas as Oportunidades — Atrito',
+    '# Todas as Ideias — Atrito',
     '',
     `**Exportado em:** ${formatDate(new Date().toISOString())}`,
-    `**Total:** ${opportunities.length} oportunidades`,
+    `**Total:** ${opportunities.length} ideias`,
     '',
     '---',
     '',

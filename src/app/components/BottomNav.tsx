@@ -1,11 +1,10 @@
 import { NavLink } from 'react-router-dom';
-import { Home, FileText, Plus, Lightbulb, TrendingUp } from 'lucide-react';
+import { Home, FileText, Plus, TrendingUp } from 'lucide-react';
 
 const navItems = [
   { to: '/', label: 'Início', icon: Home },
   { to: '/atritos', label: 'Atritos', icon: FileText },
   { to: '/atritos/novo', label: 'Novo', icon: Plus, isCreate: true },
-  { to: '/oportunidades', label: 'Oportunidades', icon: Lightbulb },
   { to: '/padroes', label: 'Padrões', icon: TrendingUp },
 ];
 

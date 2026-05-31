@@ -1,4 +1,4 @@
-import { FileText, Lightbulb, ArrowRight } from 'lucide-react';
+import { FileText, Lightbulb, ArrowRight, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '../components/Card';
 import { Button } from '../components/Button';
@@ -135,7 +135,7 @@ export function Padroes() {
                 <> <span className="font-medium text-foreground">{frequentCount}</span> {frequentCount === 1 ? 'ocorre frequentemente' : 'ocorrem frequentemente'}.</>
               )}
               {opportunities.length > 0 && (
-                <> {opportunities.length} {opportunities.length === 1 ? 'oportunidade foi gerada' : 'oportunidades foram geradas'} a partir dessas observações.</>
+                <> {opportunities.length} {opportunities.length === 1 ? 'ideia foi gerada' : 'ideias foram geradas'} a partir dessas observações.</>
               )}
             </>
           ) : (
@@ -151,7 +151,7 @@ export function Padroes() {
         </Card>
         <Card className="text-center py-2 md:py-3">
           <p className="text-xl md:text-2xl font-display">{opportunities.length}</p>
-          <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">oportunidades</p>
+          <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">ideias</p>
         </Card>
         <Card className="text-center py-2 md:py-3">
           <p className="text-xl md:text-2xl font-display">{intensityCounts['alta'] || 0}</p>
@@ -162,6 +162,35 @@ export function Padroes() {
           <p className="text-[10px] md:text-[11px] text-muted-foreground mt-0.5">frequentes</p>
         </Card>
       </div>
+
+      {/* Seção de sugestões de ideias */}
+      {atritos.length >= 3 && (
+        <div className="mb-5 p-4 bg-accent/30 rounded-lg border border-accent/40">
+          <div className="flex items-start gap-3">
+            <Sparkles size={18} className="text-primary mt-0.5 shrink-0" />
+            <div>
+              <h3 className="text-sm font-medium mb-1">Sugestões baseadas nos seus padrões</h3>
+              <div className="space-y-2">
+                {topContextLabel && contextCounts[topContextLabel] >= 3 && (
+                  <p className="text-sm text-muted-foreground">
+                    Você registrou <span className="font-medium text-foreground">{contextCounts[topContextLabel]} atritos</span> sobre <span className="font-medium text-foreground">{topContextLabel}</span>. Isso pode indicar um problema recorrente que merece atenção.
+                  </p>
+                )}
+                {highIntensityCount >= 2 && (
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{highIntensityCount} problemas</span> foram de alta intensidade. Considere investigar os impactos práticos e emocionais.
+                  </p>
+                )}
+                {frequentCount >= 2 && (
+                  <p className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{frequentCount} problemas</span> ocorrem frequentemente. Padrões assim revelam ideias reais de melhoria.
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="space-y-4 md:space-y-6">
         {mostProblematicContexts.length > 0 && (
@@ -233,7 +262,7 @@ export function Padroes() {
 
         {highPriorityOpportunities.length > 0 && (
           <section>
-            <h2 className="text-base font-medium mb-3">Oportunidades prioritárias</h2>
+            <h2 className="text-base font-medium mb-3">Ideias prioritárias</h2>
             <div className="space-y-2">
               {highPriorityOpportunities.map((opportunity) => (
                 <Card key={opportunity.id} className="py-3 px-4">
@@ -333,7 +362,7 @@ export function Padroes() {
             </Card>
 
             <Card>
-              <h3 className="text-xs text-muted-foreground mb-2">Status das oportunidades</h3>
+              <h3 className="text-xs text-muted-foreground mb-2">Status das ideias</h3>
               <div className="space-y-2">
                 {Object.entries(opportunityStatusCounts).length === 0 ? (
                   <p className="text-xs text-muted-foreground/60">Sem dados</p>

@@ -6,7 +6,7 @@ import { BottomNav } from './components/BottomNav';
 import { Inicio } from './pages/Inicio';
 import { Atritos } from './pages/Atritos';
 import { NovoAtrito } from './pages/NovoAtrito';
-import { Oportunidades } from './pages/Oportunidades';
+import { Ideias } from './pages/Oportunidades';
 import { Padroes } from './pages/Padroes';
 import { ToastContainer } from './components/Toast';
 import { ConfirmDialog } from './components/ConfirmDialog';
@@ -24,7 +24,7 @@ export default function App() {
                 <Route path="/" element={<Inicio />} />
                 <Route path="/atritos" element={<Atritos />} />
                 <Route path="/atritos/novo" element={<NovoAtrito />} />
-                <Route path="/oportunidades" element={<Oportunidades />} />
+                <Route path="/oportunidades" element={<Ideias />} />
                 <Route path="/padroes" element={<Padroes />} />
                 <Route path="*" element={<Inicio />} />
               </Routes>

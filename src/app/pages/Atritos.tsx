@@ -114,8 +114,7 @@ export function Atritos() {
   const handleTransformToOpportunity = (atrito: Atrito) => {
     const existingOpportunity = opportunities.find((opp) => opp.atritos.includes(atrito.id));
     if (existingOpportunity) {
-      showToast('Este atrito já foi transformado em oportunidade.', 'info');
-      navigate('/oportunidades');
+      showToast('Este atrito já foi transformado em ideia.', 'info');
       return;
     }
 
@@ -124,8 +123,7 @@ export function Atritos() {
     addOpportunity(newOpportunity);
     updateAtrito(atrito.id, { status: 'virou ideia' });
     setSelectedAtrito(null);
-    showToast('Oportunidade criada!');
-    navigate('/oportunidades');
+    showToast('Ideia criada!');
   };
 
   const handleChangeStatus = (atrito: Atrito, newStatus: AtritoStatus) => {
@@ -157,7 +155,7 @@ export function Atritos() {
     if (linkedOpportunities.length > 0) {
       const confirmed = await showConfirm({
         title: 'Excluir observação',
-        message: `Esta observação está vinculada a ${linkedOpportunities.length} oportunidade(s). O que deseja fazer?`,
+        message: `Esta observação está vinculada a ${linkedOpportunities.length} ideia(s). O que deseja fazer?`,
         confirmLabel: 'Excluir tudo',
         cancelLabel: 'Cancelar',
       });
@@ -462,7 +460,7 @@ export function Atritos() {
                   disabled={selectedAtrito.status === 'virou ideia'}
                 >
                   <Lightbulb size={14} />
-                  Transformar em oportunidade
+                  Transformar em ideia
                 </Button>
               </div>
             </div>

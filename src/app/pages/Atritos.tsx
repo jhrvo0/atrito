@@ -11,7 +11,7 @@ import { Modal } from '../components/Modal';
 import { BottomSheet } from '../components/BottomSheet';
 import { useApp } from '../context/AppContext';
 import { Atrito, AtritoStatus, PromptTemplateType } from '../types';
-import { generatePromptFromContext } from '../utils/promptGenerator';
+import { generatePromptFromAtritoContext } from '../utils/promptGenerator';
 import { PROMPT_TEMPLATES } from '../utils/promptTemplates';
 import { exportAtritoToMarkdown, downloadMarkdown, copyToClipboard } from '../utils/markdown';
 import { loadFilters, saveFilters, FiltersState } from '../utils/storage';
@@ -123,7 +123,7 @@ export function Atritos() {
   const generatedPrompt = useMemo(() => {
     if (!selectedAtrito) return '';
     const context = getContextForAtrito(selectedAtrito.id);
-    return generatePromptFromContext({
+    return generatePromptFromAtritoContext({
       atrito: selectedAtrito,
       investigationContext: context,
       templateType: selectedTemplateType,
@@ -473,7 +473,7 @@ export function Atritos() {
                     Aprofundar o contexto antes de gerar o briefing tende a tornar o prompt mais preciso.
                   </p>
                 )}
-                  <Button
+                <Button
                   size="sm"
                   onClick={() => handleOpenBriefingModal(selectedAtrito)}
                 >

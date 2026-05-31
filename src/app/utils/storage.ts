@@ -41,7 +41,8 @@ function safeSaveJson<T>(key: string, value: T): void {
 }
 
 export function loadAtritos(): Atrito[] {
-  return safeLoadJson<Atrito[]>(ATRITOS_KEY, []);
+  const data = safeLoadJson<Atrito[] | unknown>(ATRITOS_KEY, []);
+  return Array.isArray(data) ? data : [];
 }
 
 export function saveAtritos(atritos: Atrito[]): void {
@@ -49,7 +50,8 @@ export function saveAtritos(atritos: Atrito[]): void {
 }
 
 export function loadOpportunities(): Opportunity[] {
-  return safeLoadJson<Opportunity[]>(OPPORTUNITIES_KEY, []);
+  const data = safeLoadJson<Opportunity[] | unknown>(OPPORTUNITIES_KEY, []);
+  return Array.isArray(data) ? data : [];
 }
 
 export function saveOpportunities(opportunities: Opportunity[]): void {
@@ -87,7 +89,8 @@ export function saveOpportunityFilters(filters: OpportunityFiltersState): void {
 }
 
 export function loadInvestigationContexts(): AtritoInvestigationContext[] {
-  return safeLoadJson<AtritoInvestigationContext[]>(INVESTIGATION_CONTEXTS_KEY, []);
+  const data = safeLoadJson<AtritoInvestigationContext[] | unknown>(INVESTIGATION_CONTEXTS_KEY, []);
+  return Array.isArray(data) ? data : [];
 }
 
 export function saveInvestigationContexts(contexts: AtritoInvestigationContext[]): void {
@@ -134,6 +137,21 @@ export function downloadBackup(): void {
   URL.revokeObjectURL(url);
 }
 
+function isValidAtrito(value: unknown): value is Atrito {
+  if (typeof value !== 'object' || value === null) return false;
+  const obj = value as Record<string, unknown>;
+  return (
+    typeof obj.id === 'string' &&
+    typeof obj.title === 'string' &&
+    typeof obj.context === 'string' &&
+    typeof obj.intensity === 'string' &&
+    typeof obj.frequency === 'string' &&
+    typeof obj.affected === 'string' &&
+    typeof obj.status === 'string' &&
+    typeof obj.createdAt === 'string'
+  );
+}
+
 export function importBackup(jsonString: string): { success: boolean; message: string } {
   try {
     const data = JSON.parse(jsonString) as Partial<BackupData>;
@@ -146,13 +164,18 @@ export function importBackup(jsonString: string): { success: boolean; message: s
       return { success: false, message: 'Formato de backup inválido.' };
     }
 
-    saveAtritos(data.atritos);
+    const validAtritos = data.atritos.filter(isValidAtrito);
+
+    saveAtritos(validAtritos);
     saveOpportunities(data.opportunities);
     saveInvestigationContexts(data.investigationContexts || []);
 
+    const skipped = data.atritos.length - validAtritos.length;
+    const warning = skipped > 0 ? ` (${skipped} atrito(s) inválido(s) ignorado(s))` : '';
+
     return {
       success: true,
-      message: `Backup importado: ${data.atritos.length} atritos, ${data.opportunities.length} ideias.`,
+      message: `Backup importado: ${validAtritos.length} atritos, ${data.opportunities.length} ideias.${warning}`,
     };
   } catch {
     return { success: false, message: 'Não foi possível ler o arquivo JSON.' };

@@ -8,7 +8,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "check": "tsc --noEmit",
+    "check": "npm run typecheck && npm run build",
     "cap:sync": "npx cap sync android",
     "cap:open": "npx cap open android",
     "android": "npx cap sync android && npx cap open android",

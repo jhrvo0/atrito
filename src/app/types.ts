@@ -45,13 +45,13 @@ export interface AtritoInvestigationContext {
   id: string;
   atritoId: string;
   scenario: string;
-  timesOccurred: TimesOccurred;
+  timesOccurred?: TimesOccurred;
   firstNoticedAt?: string;
   lastOccurredAt?: string;
   affectedPeopleDescription: string;
   currentWorkaround: string;
-  emotionalImpact: EmotionalImpact;
-  practicalImpact: PracticalImpact;
+  emotionalImpact?: EmotionalImpact;
+  practicalImpact?: PracticalImpact;
   rootCauseGuess: string;
   evidence: string;
   similarSituations: string;

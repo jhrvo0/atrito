@@ -210,56 +210,12 @@ export function Atritos() {
           )}
         </div>
 
-        <div className="hidden md:flex flex-wrap gap-2">
-          <div className="w-36">
-            <select
-              value={filters.contextFilter}
-              onChange={(e) => setFilters({ ...filters, contextFilter: e.target.value })}
-              className="w-full text-xs px-2 py-1.5 rounded-md border border-border/60 bg-card text-foreground"
-            >
-              <option value="">Contexto</option>
-              {contextOptions.map((o) => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-          </div>
-          <div className="w-32">
-            <select
-              value={filters.intensityFilter}
-              onChange={(e) => setFilters({ ...filters, intensityFilter: e.target.value })}
-              className="w-full text-xs px-2 py-1.5 rounded-md border border-border/60 bg-card text-foreground"
-            >
-              <option value="">Intensidade</option>
-              <option value="baixa">Baixa</option>
-              <option value="média">Média</option>
-              <option value="alta">Alta</option>
-            </select>
-          </div>
-          <div className="w-36">
-            <select
-              value={filters.frequencyFilter}
-              onChange={(e) => setFilters({ ...filters, frequencyFilter: e.target.value })}
-              className="w-full text-xs px-2 py-1.5 rounded-md border border-border/60 bg-card text-foreground"
-            >
-              <option value="">Frequência</option>
-              <option value="uma vez">Aconteceu uma vez</option>
-              <option value="às vezes">Às vezes</option>
-              <option value="frequentemente">Frequentemente</option>
-            </select>
-          </div>
-          <div className="w-32">
-            <select
-              value={filters.statusFilter}
-              onChange={(e) => setFilters({ ...filters, statusFilter: e.target.value })}
-              className="w-full text-xs px-2 py-1.5 rounded-md border border-border/60 bg-card text-foreground"
-            >
-              <option value="">Status</option>
-              <option value="observado">Observado</option>
-              <option value="investigando">Investigando</option>
-              <option value="virou ideia">Virou ideia</option>
-              <option value="descartado">Descartado</option>
-            </select>
-          </div>
+        <div className="hidden md:block">
+          <AtritoFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            contextOptions={contextOptions}
+          />
         </div>
       </div>
 

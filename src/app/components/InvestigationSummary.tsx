@@ -14,8 +14,9 @@ interface InvestigationSummaryProps {
 
 function getLabel<T extends { value: string; label: string }>(
   options: T[],
-  value: string
+  value: string | undefined
 ): string {
+  if (!value) return '';
   return options.find((o) => o.value === value)?.label || value;
 }
 

@@ -7,16 +7,13 @@ import { Input } from '../components/Input';
 import { Textarea } from '../components/Textarea';
 import { ChipSelect } from '../components/ChipSelect';
 import { useApp } from '../context/AppContext';
-import { Atrito } from '../types';
+import { Atrito, Intensity, Frequency, Affected } from '../types';
 import {
   CONTEXT_OPTIONS,
   INTENSITY_OPTIONS,
   FREQUENCY_OPTIONS,
   AFFECTED_OPTIONS,
   isValidContext,
-  isValidIntensity,
-  isValidFrequency,
-  isValidAffected,
 } from '../constants';
 import { toISOStringNow } from '../utils/date';
 import { showConfirm } from '../components/ConfirmDialog';
@@ -32,6 +29,76 @@ type FormData = {
   affected: string;
   improvisedSolution: string;
 };
+
+function AtritoDetailFields({
+  formData,
+  setFormData,
+  compact,
+}: {
+  formData: FormData;
+  setFormData: React.Dispatch<React.SetStateAction<FormData>>;
+  compact?: boolean;
+}) {
+  return (
+    <>
+      <div>
+        <label className="block text-xs text-muted-foreground mb-2 font-medium">Descrição</label>
+        <Textarea
+          placeholder={compact ? 'O que aconteceu e por que foi problema...' : 'Descreva o que aconteceu, o contexto e por que isso foi um problema...'}
+          value={formData.description}
+          onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+          rows={compact ? 2 : 3}
+          className={compact ? 'min-h-[44px]' : undefined}
+        />
+        {!compact && (
+          <p className="text-[11px] text-muted-foreground/60 mt-1.5">
+            Contextualize: o que você esperava vs. o que aconteceu.
+          </p>
+        )}
+      </div>
+
+      <div className={compact ? undefined : 'grid grid-cols-1 sm:grid-cols-2 gap-5'}>
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">
+            Frequência <span className="text-destructive">*</span>
+          </label>
+          <ChipSelect
+            options={FREQUENCY_OPTIONS}
+            value={formData.frequency}
+            onChange={(v) => setFormData((prev) => ({ ...prev, frequency: v }))}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs text-muted-foreground mb-2 font-medium">
+            Quem foi afetado? <span className="text-destructive">*</span>
+          </label>
+          <ChipSelect
+            options={AFFECTED_OPTIONS}
+            value={formData.affected}
+            onChange={(v) => setFormData((prev) => ({ ...prev, affected: v }))}
+          />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs text-muted-foreground mb-2 font-medium">Solução improvisada</label>
+        <Textarea
+          placeholder={compact ? 'Workaround usado...' : 'Como você ou outros contornaram esse problema na hora?'}
+          value={formData.improvisedSolution}
+          onChange={(e) => setFormData((prev) => ({ ...prev, improvisedSolution: e.target.value }))}
+          rows={2}
+          className={compact ? 'min-h-[44px]' : undefined}
+        />
+        {!compact && (
+          <p className="text-[11px] text-muted-foreground/60 mt-1.5">
+            Workarounds revelam sinais úteis de produto.
+          </p>
+        )}
+      </div>
+    </>
+  );
+}
 
 export function NovoAtrito() {
   const navigate = useNavigate();
@@ -56,6 +123,8 @@ export function NovoAtrito() {
     if (!formData.title.trim()) newErrors.push('Título');
     if (!formData.context && !formData.contextCustom.trim()) newErrors.push('Contexto');
     if (!formData.intensity) newErrors.push('Intensidade');
+    if (!formData.frequency) newErrors.push('Frequência');
+    if (!formData.affected) newErrors.push('Quem foi afetado');
 
     if (newErrors.length > 0) {
       setErrors(newErrors);
@@ -73,9 +142,9 @@ export function NovoAtrito() {
       title: formData.title.trim(),
       description: formData.description.trim(),
       context: isValidContext(contextValue) ? contextValue : 'outro',
-      intensity: isValidIntensity(formData.intensity) ? formData.intensity : 'média',
-      frequency: isValidFrequency(formData.frequency) ? formData.frequency : 'às vezes',
-      affected: isValidAffected(formData.affected) ? formData.affected : 'eu',
+      intensity: formData.intensity as Intensity,
+      frequency: formData.frequency as Frequency,
+      affected: formData.affected as Affected,
       improvisedSolution: formData.improvisedSolution.trim() || undefined,
       status: 'observado',
       createdAt: toISOStringNow(),
@@ -189,57 +258,7 @@ export function NovoAtrito() {
 
             <div className="hidden md:block">
               <Card className="space-y-5 mb-4">
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                    Descrição
-                  </label>
-                  <Textarea
-                    placeholder="Descreva o que aconteceu, o contexto e por que isso foi um problema..."
-                    value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    rows={3}
-                  />
-                  <p className="text-[11px] text-muted-foreground/60 mt-1.5">
-                    Contextualize: o que você esperava vs. o que aconteceu.
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                      Frequência <span className="text-destructive">*</span>
-                    </label>
-                    <ChipSelect
-                      options={FREQUENCY_OPTIONS}
-                      value={formData.frequency}
-                      onChange={(v) => setFormData({ ...formData, frequency: v })}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-2 font-medium">
-                      Quem foi afetado? <span className="text-destructive">*</span>
-                    </label>
-                    <ChipSelect
-                      options={AFFECTED_OPTIONS}
-                      value={formData.affected}
-                      onChange={(v) => setFormData({ ...formData, affected: v })}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs text-muted-foreground mb-2 font-medium">Solução improvisada</label>
-                  <Textarea
-                    placeholder="Como você ou outros contornaram esse problema na hora?"
-                    value={formData.improvisedSolution}
-                    onChange={(e) => setFormData({ ...formData, improvisedSolution: e.target.value })}
-                    rows={2}
-                  />
-                  <p className="text-[11px] text-muted-foreground/60 mt-1.5">
-                    Workarounds revelam sinais úteis de produto.
-                  </p>
-                </div>
+                <AtritoDetailFields formData={formData} setFormData={setFormData} />
               </Card>
 
               <div className="flex flex-col sm:flex-row gap-3">
@@ -264,45 +283,7 @@ export function NovoAtrito() {
 
               {showDetails && (
                 <Card className="space-y-5 mb-4 animate-in fade-in duration-200">
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Descrição</label>
-                    <Textarea
-                      placeholder="O que aconteceu e por que foi problema..."
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      rows={2}
-                      className="min-h-[44px]"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Frequência</label>
-                    <ChipSelect
-                      options={FREQUENCY_OPTIONS}
-                      value={formData.frequency}
-                      onChange={(v) => setFormData({ ...formData, frequency: v })}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Quem afetou?</label>
-                    <ChipSelect
-                      options={AFFECTED_OPTIONS}
-                      value={formData.affected}
-                      onChange={(v) => setFormData({ ...formData, affected: v })}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs text-muted-foreground mb-2 font-medium">Solução improvisada</label>
-                    <Textarea
-                      placeholder="Workaround usado..."
-                      value={formData.improvisedSolution}
-                      onChange={(e) => setFormData({ ...formData, improvisedSolution: e.target.value })}
-                      rows={2}
-                      className="min-h-[44px]"
-                    />
-                  </div>
+                  <AtritoDetailFields formData={formData} setFormData={setFormData} compact />
                 </Card>
               )}
 
